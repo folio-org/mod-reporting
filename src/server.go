@@ -87,7 +87,7 @@ func handler(w http.ResponseWriter, req *http.Request, server *ModReportingServe
 	if path == "/" {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		fmt.Fprintln(w, `
-This is <a href="https://github.com/indexdata/mod-reporting">mod-reporting</a>. Try:
+This is <a href="https://github.com/folio-org/mod-reporting">mod-reporting</a>. Try:
 <ul>
   <li><a href="/admin/health">Health check</a></li>
   <li><a href="/htdocs/">Static area</a></li>
