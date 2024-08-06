@@ -22,7 +22,7 @@ lint:
 
 test:
 	go test -v -coverprofile=c.out ./...
-	@echo "go tool cover -func=c.out | sed 's/^github.com\/indexdata\/mod-reporting\/src\///'"
+	@echo "go tool cover -func=c.out | sed 's/^github.com\/folio-org\/mod-reporting\/src\///'"
 
 test1:
 	go test -v -coverprofile=c.out . -run Test_reporting

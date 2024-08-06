@@ -1,4 +1,4 @@
-module github.com/indexdata/mod-reporting
+module github.com/folio-org/mod-reporting
 
 go 1.21.3
 
