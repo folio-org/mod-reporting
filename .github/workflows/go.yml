@@ -5,7 +5,7 @@ name: build-test
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "deployment" ]
     paths:
       - '**.go'
       - 'etc/config.json'
@@ -13,7 +13,7 @@ on:
       - 'descriptors/ModuleDescriptor-template.json'
       - '.github/workflows/*.yml'
   pull_request:
-    branches: [ "main" ]
+    branches: [ "deployment" ]
 
 jobs:
   build:
