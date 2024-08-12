@@ -15,6 +15,11 @@ This software is distributed under the terms of the Apache License, Version 2.0.
     * [Redundant field in API](#redundant-field-in-api)
     * [CORS problems when running locally](#cors-problems-when-running-locally)
 * [See also](#see-also)
+* [Additional information](#additional-information)
+    * [Issue tracker](#issue-tracker)
+    * [Code of Conduct](#code-of-conduct)
+    * [ModuleDescriptor](#moduledescriptor)
+    * [API documentation](#api-documentation)
 * [Author](#author)
 
 
@@ -30,9 +35,6 @@ This module does not store any personal data. See the file [`PERSONAL_DATA_DISCL
 
 **Contributing.**
 See the file [`CONTRIBUTING.md`](CONTRIBUTING.md) for details.
-
-**Issues.**
-For the time being, [this project's GitHub issue tracker](https://github.com/indexdata/mod-reporting/issues) will be used; once the software is ready for prime time, we will likely switch to Jira.
 
 
 
@@ -132,7 +134,32 @@ If running `mod-reporting` locally, you will likely run into CORS problems with 
 * FOLIO's Reporting app, [`ui-ldp`](https://github.com/folio-org/ui-ldp), which uses this module
 * [In-progress Module Acceptance assessment](doc/MODULE_EVALUATION_TEMPLATE.MD)
 
+## Additional information
 
+### Issue tracker
+
+See project [MODREP](https://issues.folio.org/browse/MODREP)
+at the [FOLIO issue tracker](https://dev.folio.org/guidelines/issue-tracker).
+
+### Code of Conduct
+
+Refer to the Wiki
+[FOLIO Code of Conduct](https://wiki.folio.org/display/COMMUNITY/FOLIO+Code+of+Conduct).
+
+### ModuleDescriptor
+
+See the [ModuleDescriptor](descriptors/ModuleDescriptor-template.json)
+for the interfaces that this module requires and provides, the permissions,
+and the additional module metadata.
+
+### API documentation
+
+API descriptions:
+
+ * [RAML](ramls/ldp.raml) and the included [Overview](ramls/overview.md).
+ * [JSON Schemas](ramls/)
+
+Generated [API documentation](https://dev.folio.org/reference/api/#mod-reporting).
 
 ## Author
 
