@@ -7,7 +7,6 @@ on:
     workflows: ['build-test']
     types: [completed]
     branches: ['deployment']
-  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
