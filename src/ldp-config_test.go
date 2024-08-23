@@ -67,9 +67,10 @@ func Test_handleConfig(t *testing.T) {
 	defer ts.Close()
 	baseUrl := ts.URL
 
-	session, err := NewModReportingSession(nil, baseUrl, "dummyTenant")
+	server := MakeModReportingServer(nil, nil, "")
+	session, err := NewModReportingSession(server, baseUrl, "dummyTenant")
 	assert.Nil(t, err)
-	badSession, err := NewModReportingSession(nil, "x" + baseUrl, "dummyTenant")
+	badSession, err := NewModReportingSession(server, "x" + baseUrl, "dummyTenant")
 	assert.Nil(t, err)
 
 	for i, test := range tests {
