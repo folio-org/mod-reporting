@@ -49,7 +49,7 @@ func NewModReportingSession(server *ModReportingServer, url string, tenant strin
 
 	if url != "" {
 		// A request that has arrived via Okapi (or been faked to look that way)
-		service := foliogo.NewService(url)
+		service := foliogo.NewService(url, server.GetLogger())
 		folioSession, err := service.ResumeSession(tenant)
 		session.folioSession = folioSession
 		if err != nil {
@@ -61,7 +61,7 @@ func NewModReportingSession(server *ModReportingServer, url string, tenant strin
 
 	// Probably a request from command-line, not via Okapi
 	// In this case, we use a FOLIO service specified in the environment
-	folioSession, err := foliogo.NewDefaultSession()
+	folioSession, err := foliogo.NewDefaultSession(server.GetLogger())
 	if err != nil {
 		return nil, fmt.Errorf("could not create new FOLIO session: %w", err)
 	}
