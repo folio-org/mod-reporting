@@ -1,11 +1,11 @@
 name: Go central workflow
 
-# STATUS: 20240826: testing
+# STATUS: 20240826: testing 2
 
 on:
+  workflow_dispatch:
   push:
     branches: [ FOLIO-3994-go-workflows ]
-  workflow_dispatch:
 
 jobs:
   go:
