@@ -1,0 +1,15 @@
+name: Go central workflow
+
+# STATUS: 20240826: testing
+
+on:
+  workflow_dispatch:
+
+jobs:
+  go:
+    uses: folio-org/.github/.github/workflows/go.yml@FOLIO-3994-go-workflows
+    # if: github.ref_name == github.event.repository.default_branch || github.event_name != 'push'
+    secrets: inherit
+    with:
+      test-variable: 'hello from mod-reporting'
+
