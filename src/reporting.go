@@ -332,6 +332,7 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 	if err != nil {
 		return fmt.Errorf("could not construct SQL function call: %w", err)
 	}
+	session.Log("sql", cmd)
 
 	tx, err := dbConn.Begin(context.Background())
 	if err != nil {
