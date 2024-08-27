@@ -48,7 +48,7 @@ func MakeModReportingServer(cfg *config, logger *catlogger.Logger, root string) 
 
 // Intended only for ModReportingSession to pass the session logger though to foliogo
 func (server *ModReportingServer)GetLogger() *catlogger.Logger{
-	return server.logger;
+	return server.logger
 }
 
 
