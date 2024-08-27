@@ -328,10 +328,11 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 		sql = "SET search_path = local, public;\n" + sql
 	}
 
-	cmd, err := makeFunctionCall(sql, query.Params, query.Limit)
+	cmd, params, err := makeFunctionCall(sql, query.Params, query.Limit)
 	if err != nil {
 		return fmt.Errorf("could not construct SQL function call: %w", err)
 	}
+	session.Log("sql", cmd, fmt.Sprintf("%v", params))
 
 	tx, err := dbConn.Begin(context.Background())
 	if err != nil {
@@ -344,7 +345,7 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 		return fmt.Errorf("could not register SQL function: %w", err)
 	}
 
-	rows, err := tx.Query(context.Background(), cmd)
+	rows, err := tx.Query(context.Background(), cmd, params...)
 	if err != nil {
 		return fmt.Errorf("could not execute SQL from report: %w", err)
 	}
@@ -370,16 +371,21 @@ func validateUrl(_url string) error {
 }
 
 
-func makeFunctionCall(sql string, params map[string]string, limit int) (string, error) {
+func makeFunctionCall(sql string, params map[string]string, limit int) (string, []any, error) {
+	orderedParams := make([]any, 0)
+
 	re := regexp.MustCompile(`--.+:function\s+(.+)`)
 	m := re.FindStringSubmatch(sql)
 	if m == nil {
-		return "", fmt.Errorf("could not extract SQL function name")
+		return "", nil, fmt.Errorf("could not extract SQL function name")
 	}
 
 	s := make([]string, 0, len(params))
+	i := 1
 	for key, val := range(params) {
-		s = append(s, fmt.Sprintf("%s => '%s'", key, val))
+		s = append(s, fmt.Sprintf("%s => $%d", key, i))
+		orderedParams = append(orderedParams, val)
+		i++
 	}
 
 	cmd := "SELECT * FROM " + m[1] + "(" + strings.Join(s, ", ") + ")"
@@ -387,7 +393,7 @@ func makeFunctionCall(sql string, params map[string]string, limit int) (string, 
 		cmd += fmt.Sprintf(" LIMIT %d", limit)
 	}
 
-	return cmd, nil
+	return cmd, orderedParams, nil
 }
 
 

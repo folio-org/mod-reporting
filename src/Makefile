@@ -6,7 +6,7 @@ $(TARGET): $(SRC)
 	go build -o $@
 
 run: $(TARGET)
-	cd ..; env LOGCAT=listen,path,db,error,sql,op,curl,status,response src/$(TARGET) etc/config.json
+	cd ..; env LOGCAT=listen,path,db,error,sql,op,curl,sql,status,response src/$(TARGET) etc/config.json
 
 run-local: $(TARGET)
 	cd ..; env LOGCAT=listen,path,db,error,sql,op,curl,status,response OKAPI_URL=https://folio-snapshot-okapi.dev.folio.org OKAPI_TENANT=diku OKAPI_USER=diku_admin src/$(TARGET) etc/config.json
