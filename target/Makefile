@@ -1,5 +1,5 @@
 ARTIFACTID=`sed -n 's/^module .*\/\(.*\)/\1/p' ../go.mod`
-VERSION?=`git describe --tags --abbrev=0 | sed 's/^v\([0-9]\)/\1/'`
+VERSION ?= `git describe --tags --abbrev=0 | sed 's/^v\([0-9]\)/\1/'`
 TARGETS=Activate.json DeploymentDescriptor.json Discovery.json ModuleDescriptor.json
 
 **make-default**: $(TARGETS)
