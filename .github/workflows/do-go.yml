@@ -1,6 +1,6 @@
 name: Go central workflow
 
-# STATUS: 20240826: testing
+# STATUS: 20240830: testing
 
 on:
   workflow_dispatch:
@@ -11,5 +11,5 @@ jobs:
     # if: github.ref_name == github.event.repository.default_branch || github.event_name != 'push'
     secrets: inherit
     with:
-      test-variable: 'hello from mod-reporting'
+      docker-label-documentation: 'https://github.com/folio-org/ui-ldp/blob/master/doc/reports.md'
 
