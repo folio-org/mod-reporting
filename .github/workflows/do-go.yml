@@ -1,6 +1,6 @@
 name: Go central workflow
 
-# STATUS: 20240830: testing
+# STATUS: 20240909: testing
 
 on:
   workflow_dispatch:
@@ -8,7 +8,6 @@ on:
 jobs:
   go:
     uses: folio-org/.github/.github/workflows/go.yml@FOLIO-3994-go-workflows
-    # if: github.ref_name == github.event.repository.default_branch || github.event_name != 'push'
     secrets: inherit
     with:
       docker-label-documentation: 'https://github.com/folio-org/ui-ldp/blob/master/doc/reports.md'
