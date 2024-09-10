@@ -1,9 +1,16 @@
 name: Go central workflow
 
-# STATUS: 20240909: testing
+# STATUS: 20240910: testing
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - '**.go'
+      - 'etc/config.json'
+      - 'Dockerfile'
+      - 'descriptors/ModuleDescriptor-template.json'
+      - '.github/workflows/do-go.yml'
 
 jobs:
   go:
