@@ -1,14 +1,20 @@
 name: Go central workflow
 
-# STATUS: 20240830: testing
-
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - '**.go'
+      - 'etc/config.json'
+      - 'Dockerfile'
+      - 'descriptors/ModuleDescriptor-template.json'
+      - '.github/workflows/do-go.yml'
+    tags:
+      - '[vV][0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
   go:
-    uses: folio-org/.github/.github/workflows/go.yml@FOLIO-3994-go-workflows
-    # if: github.ref_name == github.event.repository.default_branch || github.event_name != 'push'
+    uses: folio-org/.github/.github/workflows/go.yml@master
     secrets: inherit
     with:
       docker-label-documentation: 'https://github.com/folio-org/ui-ldp/blob/master/doc/reports.md'

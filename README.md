@@ -172,4 +172,3 @@ and for [snapshot versions](https://hub.docker.com/r/folioci/mod-reporting/).
 Mike Taylor, [Index Data ApS](https://www.indexdata.com/).
 mike@indexdata.com
 
-
