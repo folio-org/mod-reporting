@@ -14,7 +14,7 @@ on:
 
 jobs:
   go:
-    uses: folio-org/.github/.github/workflows/go.yml@FOLIO-3994-go-workflows
+    uses: folio-org/.github/.github/workflows/go.yml@FOLIO-3994-go-workflows-2
     secrets: inherit
     with:
       docker-label-documentation: 'https://github.com/folio-org/ui-ldp/blob/master/doc/reports.md'
