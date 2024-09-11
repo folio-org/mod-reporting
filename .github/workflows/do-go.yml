@@ -1,7 +1,5 @@
 name: Go central workflow
 
-# STATUS: 20240910: testing
-
 on:
   workflow_dispatch:
   push:
@@ -11,6 +9,8 @@ on:
       - 'Dockerfile'
       - 'descriptors/ModuleDescriptor-template.json'
       - '.github/workflows/do-go.yml'
+    tags:
+      - '[vV][0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
   go:
