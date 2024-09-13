@@ -20,9 +20,8 @@ This software is distributed under the terms of the Apache License, Version 2.0.
     * [Code of Conduct](#code-of-conduct)
     * [ModuleDescriptor](#moduledescriptor)
     * [API documentation](#api-documentation)
+    * [Download and configuration](#download-and-configuration)
 * [Author](#author)
-
-
 
 ## Overview
 
@@ -161,9 +160,15 @@ API descriptions:
 
 Generated [API documentation](https://dev.folio.org/reference/api/#mod-reporting).
 
+### Download and configuration
+
+The built artifacts for this module are available.
+See [configuration](https://dev.folio.org/download/artifacts) for repository access,
+and the Docker images for [released versions](https://hub.docker.com/r/folioorg/mod-reporting/)
+and for [snapshot versions](https://hub.docker.com/r/folioci/mod-reporting/).
+
 ## Author
 
 Mike Taylor, [Index Data ApS](https://www.indexdata.com/).
 mike@indexdata.com
-
 
