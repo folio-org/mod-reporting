@@ -1,6 +1,6 @@
 # Change history for mod-reporting
 
-## [1.0.3](https://github.com/folio-org/mod-reporting/tree/v1.0.3) (IN PROGRESS)
+## [1.0.3](https://github.com/folio-org/mod-reporting/tree/v1.0.3) (2024-09-16)
 
 * Change launch-descriptor `portBindings§ to match the port exposed by `Dockerfile`. Fixes DEVOPS-3304.
 
