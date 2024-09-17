@@ -114,21 +114,6 @@
         "Memory": 20000000,
         "PortBindings": { "12369/tcp": [ { "HostPort": "%p" } ] }
       }
-    },
-    "env": [
-      {
-        "name" : "REPORTING_DB_URL",
-        "value" : "postgres://metadb.example.com:5432/test",
-        "description": "OPTIONAL. If this, REPORTING_DB_USER and REPORTING_DB_PASS are all provided, they override the reporting database connection information provided by the module's in-FOLIO configuration. This should rarely if ever be done in production, and is provided to aid developers."
-      },
-      {
-        "name" : "REPORTING_DB_USER",
-        "value" : "jimi"
-      },
-      {
-        "name" : "REPORTING_DB_PASS",
-        "value" : "purpleH@ze!"
-      }
-    ]
+    }
   }
 }
