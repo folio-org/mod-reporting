@@ -2,6 +2,7 @@ name: Go central workflow
 
 on:
   push:
+    branches: ['*']
     paths:
       - '**.go'
       - 'go.*'
