@@ -1,16 +1,18 @@
 name: Go central workflow
 
 on:
-  workflow_dispatch:
   push:
     paths:
       - '**.go'
+      - 'go.*'
       - 'etc/config.json'
+      - '**/Makefile'
       - 'Dockerfile'
       - 'descriptors/ModuleDescriptor-template.json'
       - '.github/workflows/do-go.yml'
     tags:
       - '[vV][0-9]+.[0-9]+.[0-9]+*'
+  workflow_dispatch:
 
 jobs:
   go:
