@@ -21,15 +21,15 @@ lint:
 	-deadcode
 
 test:
-	go test -v -coverprofile=c.out ./...
-	@echo "go tool cover -func=c.out | sed 's/^github.com\/folio-org\/mod-reporting\/src\///'"
+	go test -v -coverprofile=coverage.out ./...
+	@echo "go tool cover -func=coverage.out | sed 's/^github.com\/folio-org\/mod-reporting\/src\///'"
 
 test1:
-	go test -v -coverprofile=c.out . -run Test_reporting
+	go test -v -coverprofile=coverage.out . -run Test_reporting
 
-cover: c.out
-	go tool cover -html=c.out
+cover: coverage.out
+	go tool cover -html=coverage.out
 
 clean:
-	rm -f $(TARGET) c.out
+	rm -f $(TARGET) coverage.out coverage.json
 
