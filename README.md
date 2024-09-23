@@ -20,6 +20,7 @@ This software is distributed under the terms of the Apache License, Version 2.0.
     * [Code of Conduct](#code-of-conduct)
     * [ModuleDescriptor](#moduledescriptor)
     * [API documentation](#api-documentation)
+    * [Code analysis](#code-analysis)
     * [Download and configuration](#download-and-configuration)
 * [Author](#author)
 
@@ -159,6 +160,10 @@ API descriptions:
  * [JSON Schemas](ramls/)
 
 Generated [API documentation](https://dev.folio.org/reference/api/#mod-reporting).
+
+### Code analysis
+
+[SonarCloud analysis](https://sonarcloud.io/project/overview?id=org.folio:mod-reporting).
 
 ### Download and configuration
 
