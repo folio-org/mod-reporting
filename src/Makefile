@@ -22,6 +22,7 @@ lint:
 
 test:
 	go test -v -coverprofile=coverage.out ./...
+	go test -json -coverprofile=coverage.out ./... > coverage.json
 	@echo "go tool cover -func=coverage.out | sed 's/^github.com\/folio-org\/mod-reporting\/src\///'"
 
 test1:
