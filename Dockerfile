@@ -3,11 +3,21 @@
 
 FROM golang:1.21
 
+ENV APP_DIR=/app
+
+# Create user/group 'folio'
+RUN addgroup folio && \
+    adduser --disabled-password --gecos "" --home ${APP_DIR} --ingroup folio folio && \
+    chown -R folio:folio ${APP_DIR}
+
+# Run as this user
+USER folio
+
 # Set destination for COPY
-WORKDIR /app
+WORKDIR ${APP_DIR}
 
 # Download Go modules
-COPY go.mod go.sum .
+COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy sources
