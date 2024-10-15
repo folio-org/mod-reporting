@@ -1,5 +1,10 @@
 # Change history for mod-reporting
 
+## [1.1.0](https://github.com/folio-org/mod-reporting/tree/v1.1.0) (IN PROGRESS)
+
+* Modify permission names for the convenience of Eureka. Each endpoint is now governed my its own permission instead of `ldp.read` governing logs/tables/columns/query/reports. For backwards-compatibility, `ldp.read` is retained as an umbrella that contains all five new fine-grained permissions. Fixes MODREP-7.
+* The `ldp-query` interface version number is incremented from 1.2 to 1.3. (A minor version bump suffices, as the current interface is backwards-compatible with the old.)
+
 ## [1.0.4](https://github.com/folio-org/mod-reporting/tree/v1.0.4) (2024-09-17)
 
 * Remove `env` section from the module-descriptor. This was causing FOLIO snapshot deployment to use a hardwired incorrect specification of the reporting database parameters.
