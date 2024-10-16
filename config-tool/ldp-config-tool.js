@@ -22,7 +22,11 @@ if (op === 'get') {
 var data = fs.readFileSync(process.stdin.fd, 'utf-8');
 const json = JSON.parse(data)
 for (let i = 0; i < json.length; i++) {
-  const rec = json[i]
+  const rec = { ...json[i] };
+  if (typeof rec.value !== 'string') {
+    rec.value = JSON.stringify(rec.value);
+  }
+
   if (op === 'set') {
     await session.folioFetch(`/ldp/config/${rec.key}`, {
       method: 'PUT',

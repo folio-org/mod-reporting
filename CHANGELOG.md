@@ -4,6 +4,7 @@
 
 * Modify permission names for the convenience of Eureka. Each endpoint is now governed my its own permission instead of `ldp.read` governing logs/tables/columns/query/reports. For backwards-compatibility, `ldp.read` is retained as an umbrella that contains all five new fine-grained permissions. Fixes MODREP-7.
 * The `ldp-query` interface version number is incremented from 1.2 to 1.3. (A minor version bump suffices, as the current interface is backwards-compatible with the old.)
+* `ldp-config-tool` now serializes object values to strings. This means if you now fetch an object-valued config from mod-ldp, you can set it directly into mod-reporting. Fixes MODREP-10.
 
 ## [1.0.4](https://github.com/folio-org/mod-reporting/tree/v1.0.4) (2024-09-17)
 
