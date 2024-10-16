@@ -1,0 +1,12 @@
+output:
+  print-issued-lines: false
+linters-settings:
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment
+    settings:
+      shadow:
+        # Whether to be strict about shadowing; can be noisy.
+        # Default: false
+        strict: true
