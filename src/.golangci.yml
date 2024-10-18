@@ -1,3 +1,6 @@
+linters:
+  enable:
+    - whitespace
 output:
   print-issued-lines: false
 linters-settings:
