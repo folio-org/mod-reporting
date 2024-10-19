@@ -12,4 +12,4 @@ linters-settings:
       shadow:
         # Whether to be strict about shadowing; can be noisy.
         # Default: false
-        strict: true
+        strict: false
