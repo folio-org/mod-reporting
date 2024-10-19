@@ -19,3 +19,4 @@ jobs:
       errcheck-excludes-file: 'src/.errcheck-exclude'
       golangci-config-file: 'src/.golangci.yml'
 
+
