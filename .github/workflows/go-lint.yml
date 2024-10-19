@@ -1,0 +1,21 @@
+name: Go lint central workflow
+
+on:
+  push:
+    branches: ['*']
+    paths:
+      - '**.go'
+      - 'go.*'
+      - 'src/.errcheck-exclude'
+      - 'src/.golangci.yml'
+      - '.github/workflows/go-lint.yml'
+  workflow_dispatch:
+
+jobs:
+  go-lint:
+    uses: folio-org/.github/.github/workflows/go-lint.yml@FOLIO-3994-go-lint
+    secrets: inherit
+    with:
+      lint-errcheck-excludes-file: 'src/.errcheck-exclude'
+      lint-golangci-config-file: 'src/.golangci.yml'
+

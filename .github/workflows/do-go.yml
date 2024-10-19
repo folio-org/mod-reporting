@@ -24,7 +24,4 @@ jobs:
     secrets: inherit
     with:
       docker-label-documentation: 'https://github.com/folio-org/ui-ldp/blob/master/doc/reports.md'
-      lint-errcheck-excludes-file: 'src/.errcheck-exclude'
-      lint-golangci-config-file: 'src/.golangci.yml'
-      allow-lint-errors: false
 
