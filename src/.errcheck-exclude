@@ -2,4 +2,5 @@ fmt.Fprintf
 fmt.Fprintln
 (*os.File).Close
 (io.ReadCloser).Close
+(github.com/jackc/pgx/v5.Tx).Rollback
 os.Setenv
