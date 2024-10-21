@@ -8,6 +8,7 @@ on:
       - 'go.*'
       - 'src/.errcheck-exclude'
       - 'src/.golangci.yml'
+      - '**/staticcheck.conf'
       - '.github/workflows/go-lint.yml'
   workflow_dispatch:
 
