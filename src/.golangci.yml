@@ -1,0 +1,5 @@
+linters:
+  enable:
+    - whitespace
+output:
+  print-issued-lines: false
