@@ -9,14 +9,13 @@ import "encoding/json"
 import "github.com/google/uuid"
 import "github.com/indexdata/foliogo"
 
-
 // Types for what we read from mod-settings
 // "General" here means not knowing the structure of the value
 
 type settingsItemGeneral struct {
-	Id string `json:"id"`
+	Id    string `json:"id"`
 	Scope string `json:"scope"`
-	Key string `json:"key"`
+	Key   string `json:"key"`
 	Value interface{}
 }
 
@@ -26,19 +25,17 @@ type settingsResultInfoGeneral struct {
 }
 
 type settingsResponseGeneral struct {
-	Items []settingsItemGeneral `json:"items"`
+	Items      []settingsItemGeneral     `json:"items"`
 	ResultInfo settingsResultInfoGeneral `json:"resultInfo"`
 }
-
 
 // Types for what we return as /ldp/config
 
 type configItem struct {
-	Key string `json:"key"`
+	Key    string `json:"key"`
 	Tenant string `json:"tenant"`
-	Value string `json:"value"`
+	Value  string `json:"value"`
 }
-
 
 // Wrapper for foliogo.Fetch that extracts token from request and sends it
 func fetchWithToken(req *http.Request, folioSession foliogo.Session, path string, params foliogo.RequestParams) ([]byte, error) {
@@ -50,11 +47,9 @@ func fetchWithToken(req *http.Request, folioSession foliogo.Session, path string
 	return folioSession.Fetch(path, params)
 }
 
-
 func fetchWithToken0(req *http.Request, folioSession foliogo.Session, path string) ([]byte, error) {
 	return fetchWithToken(req, folioSession, path, foliogo.RequestParams{})
 }
-
 
 func settingsItemToConfigItem(item settingsItemGeneral, tenant string) (configItem, error) {
 	value, ok := item.Value.(string)
@@ -67,13 +62,12 @@ func settingsItemToConfigItem(item settingsItemGeneral, tenant string) (configIt
 		value = string(bytes)
 	}
 	ci := configItem{
-		Key: item.Key,
-		Value: value,
+		Key:    item.Key,
+		Value:  value,
 		Tenant: tenant,
 	}
 	return ci, nil
 }
-
 
 // The /ldp/config endpoint only supports GET, with no URL parameters
 func handleConfig(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
@@ -96,7 +90,7 @@ func handleConfig(w http.ResponseWriter, req *http.Request, session *ModReportin
 
 	tenant := session.folioSession.GetTenant()
 	config := make([]configItem, len(r.Items))
-	for i, item := range(r.Items) {
+	for i, item := range r.Items {
 		config[i], err = settingsItemToConfigItem(item, tenant)
 		if err != nil {
 			return err
@@ -112,7 +106,6 @@ func handleConfig(w http.ResponseWriter, req *http.Request, session *ModReportin
 	_, _ = w.Write(bytes)
 	return nil
 }
-
 
 // The /ldp/config/{key} endpoint only supports GET and PUT
 func handleConfigKey(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
@@ -158,8 +151,7 @@ func handleConfigKey(w http.ResponseWriter, req *http.Request, session *ModRepor
 	return err
 }
 
-
-func writeConfigKey(w http.ResponseWriter, req *http.Request, session *ModReportingSession, key string) (error) {
+func writeConfigKey(w http.ResponseWriter, req *http.Request, session *ModReportingSession, key string) error {
 	bytes, err := io.ReadAll(req.Body)
 	if err != nil {
 		return fmt.Errorf("could not read HTTP request body: %w", err)
@@ -205,14 +197,14 @@ func writeConfigKey(w http.ResponseWriter, req *http.Request, session *ModReport
 	}
 
 	var simpleSettingsItem map[string]interface{} = map[string]interface{}{
-		"id": id,
+		"id":    id,
 		"scope": "ui-ldp.admin",
-		"key": key,
+		"key":   key,
 		"value": item.Value,
 	}
 	_, err = fetchWithToken(req, session.folioSession, path, foliogo.RequestParams{
 		Method: method,
-		Json: simpleSettingsItem,
+		Json:   simpleSettingsItem,
 	})
 	if err != nil {
 		return fmt.Errorf("could not write to mod-settings: %w", err)

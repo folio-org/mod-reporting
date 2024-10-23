@@ -9,21 +9,20 @@ import "github.com/stretchr/testify/assert"
 import "github.com/pashagolub/pgxmock/v3"
 import "net/http/httptest"
 
-
 func Test_makeSql(t *testing.T) {
 	tests := []testT{
 		{
-			name: "empty query",
+			name:     "empty query",
 			sendData: `{}`,
 			errorstr: "query must have exactly one table",
 		},
 		{
-			name: "query with empty tables",
+			name:     "query with empty tables",
 			sendData: `{ "tables": [] }`,
 			errorstr: "query must have exactly one table",
 		},
 		{
-			name: "simplest query",
+			name:     "simplest query",
 			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users" }] }`,
 			expected: `SELECT * FROM "folio"."users"`,
 		},
@@ -31,14 +30,14 @@ func Test_makeSql(t *testing.T) {
 			name: "query with columns",
 			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users",
 				 "showColumns": ["id", "username"] }] }`,
-			expected: `SELECT id, username FROM "folio"."users"`,
+			expected:     `SELECT id, username FROM "folio"."users"`,
 			expectedArgs: []string{},
 		},
 		{
 			name: "query with empty condition",
 			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users",
 				"columnFilters": [{}] }] }`,
-			expected: `SELECT * FROM "folio"."users"`,
+			expected:     `SELECT * FROM "folio"."users"`,
 			expectedArgs: []string{},
 		},
 		{
@@ -47,7 +46,7 @@ func Test_makeSql(t *testing.T) {
 				"columnFilters": [
 					{ "key": "id", "value": "43" }
 				] }] }`,
-			expected: `SELECT * FROM "folio"."users" WHERE id = $1`,
+			expected:     `SELECT * FROM "folio"."users" WHERE id = $1`,
 			expectedArgs: []string{"43"},
 		},
 		{
@@ -57,7 +56,7 @@ func Test_makeSql(t *testing.T) {
 					{ "key": "id", "op": ">", "value": "42" },
 					{ "key": "user", "op": "LIKE", "value": "mi%" }
 				] }] }`,
-			expected: `SELECT * FROM "folio"."users" WHERE id > $1 AND user LIKE $2`,
+			expected:     `SELECT * FROM "folio"."users" WHERE id > $1 AND user LIKE $2`,
 			expectedArgs: []string{"42", "mi%"},
 		},
 		{
@@ -67,7 +66,7 @@ func Test_makeSql(t *testing.T) {
 					{},
 					{ "key": "user", "op": "LIKE", "value": "mi%" }
 				] }] }`,
-			expected: `SELECT * FROM "folio"."users" WHERE user LIKE $2`,
+			expected:     `SELECT * FROM "folio"."users" WHERE user LIKE $2`,
 			expectedArgs: []string{"mi%"},
 		},
 		{
@@ -77,19 +76,19 @@ func Test_makeSql(t *testing.T) {
 					{ "key": "user", "direction": "asc", "nulls": "start" },
 					{ "key": "id", "direction": "desc", "nulls": "end" }
 				] }] }`,
-			expected: `SELECT * FROM "folio"."users" ORDER BY user asc NULLS FIRST, id desc NULLS LAST`,
+			expected:     `SELECT * FROM "folio"."users" ORDER BY user asc NULLS FIRST, id desc NULLS LAST`,
 			expectedArgs: []string{},
 		},
 		{
-			name: "query with limit",
-			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users", "limit": 99 }] }`,
-			expected: `SELECT * FROM "folio"."users" LIMIT 99`,
+			name:         "query with limit",
+			sendData:     `{ "tables": [{ "schema": "folio", "tableName": "users", "limit": 99 }] }`,
+			expected:     `SELECT * FROM "folio"."users" LIMIT 99`,
 			expectedArgs: []string{},
 		},
 		{
-			name: "make me one with everything",
-			sendData: `{ "tables": [{"limit": 11,"schema": "folio_inventory","orderBy": [{"direction": "asc","nulls": "end","key": "status_updated_date"},{"direction": "asc","nulls": "start","key": "__id"}],"showColumns": ["id","status_updated_date","hrid","title","source"],"columnFilters": [{"key": "status_updated_date","op": ">=","value": "2022-06-09T19:01:33.757+00:00"},{"key": "hrid","op": "<>","value": "in00000000005"}],"tableName": "instance__t"}]}`,
-			expected: `SELECT id, status_updated_date, hrid, title, source FROM "folio_inventory"."instance__t" WHERE status_updated_date >= $1 AND hrid <> $2 ORDER BY status_updated_date asc NULLS LAST, __id asc NULLS FIRST LIMIT 11`,
+			name:         "make me one with everything",
+			sendData:     `{ "tables": [{"limit": 11,"schema": "folio_inventory","orderBy": [{"direction": "asc","nulls": "end","key": "status_updated_date"},{"direction": "asc","nulls": "start","key": "__id"}],"showColumns": ["id","status_updated_date","hrid","title","source"],"columnFilters": [{"key": "status_updated_date","op": ">=","value": "2022-06-09T19:01:33.757+00:00"},{"key": "hrid","op": "<>","value": "in00000000005"}],"tableName": "instance__t"}]}`,
+			expected:     `SELECT id, status_updated_date, hrid, title, source FROM "folio_inventory"."instance__t" WHERE status_updated_date >= $1 AND hrid <> $2 ORDER BY status_updated_date asc NULLS LAST, __id asc NULLS FIRST LIMIT 11`,
 			expectedArgs: []string{"2022-06-09T19:01:33.757+00:00", "in00000000005"},
 		},
 	}
@@ -115,7 +114,6 @@ func Test_makeSql(t *testing.T) {
 	}
 }
 
-
 func Test_reportingHandlers(t *testing.T) {
 	ts := MakeDummyModSettingsServer()
 	defer ts.Close()
@@ -123,17 +121,17 @@ func Test_reportingHandlers(t *testing.T) {
 
 	tests := []testT{
 		{
-			name: "bad DB connection for tables",
+			name:          "bad DB connection for tables",
 			useBadSession: true,
-			function: handleTables,
-			errorstr: "failed to connect",
+			function:      handleTables,
+			errorstr:      "failed to connect",
 		},
 		{
-			name: "bad DB connection for columns",
-			path: "/ldp/db/columns?schema=folio_users&table=users",
+			name:          "bad DB connection for columns",
+			path:          "/ldp/db/columns?schema=folio_users&table=users",
 			useBadSession: true,
-			function: handleColumns,
-			errorstr: "failed to connect",
+			function:      handleColumns,
+			errorstr:      "failed to connect",
 		},
 		{
 			name: "retrieve list of tables",
@@ -145,14 +143,14 @@ func Test_reportingHandlers(t *testing.T) {
 			expected: `\[{"tableSchema":"folio_inventory","tableName":"records_instances"},{"tableSchema":"folio_inventory","tableName":"holdings_record"}\]`,
 		},
 		{
-			name: "list of columns without table",
-			path: "/ldp/db/columns?schema=folio_users",
+			name:     "list of columns without table",
+			path:     "/ldp/db/columns?schema=folio_users",
 			function: handleColumns,
 			errorstr: "must specify both schema and table",
 		},
 		{
-			name: "list of columns without schema",
-			path: "/ldp/db/columns?table=users",
+			name:     "list of columns without schema",
+			path:     "/ldp/db/columns?table=users",
 			function: handleColumns,
 			errorstr: "must specify both schema and table",
 		},
@@ -166,64 +164,64 @@ func Test_reportingHandlers(t *testing.T) {
 			expected: `{"columnName":"id","data_type":"uuid","tableSchema":"folio_users","tableName":"users","ordinalPosition":"6"},{"columnName":"creation_date","data_type":"timestamp without time zone","tableSchema":"folio_users","tableName":"users","ordinalPosition":"8"}]`,
 		},
 		{
-			name: "fail non-JSON query",
-			path: "/ldp/db/query",
+			name:     "fail non-JSON query",
+			path:     "/ldp/db/query",
 			sendData: "water",
 			function: handleQuery,
 			errorstr: "deserialize JSON",
 		},
 		{
-			name: "fail non-JSON query",
-			path: "/ldp/db/query",
+			name:     "fail non-JSON query",
+			path:     "/ldp/db/query",
 			sendData: `{}`,
 			function: handleQuery,
 			errorstr: "must have exactly one table",
 		},
 		{
-			name: "fail JSON query where tables is number",
-			path: "/ldp/db/query",
+			name:     "fail JSON query where tables is number",
+			path:     "/ldp/db/query",
 			sendData: `{ "tables": 42 }`,
 			function: handleQuery,
 			errorstr: "cannot unmarshal number",
 		},
 		{
-			name: "fail JSON query where tables is string",
-			path: "/ldp/db/query",
+			name:     "fail JSON query where tables is string",
+			path:     "/ldp/db/query",
 			sendData: `{ "tables": "water" }`,
 			function: handleQuery,
 			errorstr: "cannot unmarshal string",
 		},
 		{
-			name: "fail JSON query with 0 tables",
-			path: "/ldp/db/query",
+			name:     "fail JSON query with 0 tables",
+			path:     "/ldp/db/query",
 			sendData: `{ "tables": [] }`,
 			function: handleQuery,
 			errorstr: "must have exactly one table",
 		},
 		{
-			name: "fail JSON query with 2 tables",
-			path: "/ldp/db/query",
+			name:     "fail JSON query with 2 tables",
+			path:     "/ldp/db/query",
 			sendData: `{ "tables": [{}, {}] }`,
 			function: handleQuery,
 			errorstr: "must have exactly one table",
 		},
 		{
-			name: "fail JSON query where table is number",
-			path: "/ldp/db/query",
+			name:     "fail JSON query where table is number",
+			path:     "/ldp/db/query",
 			sendData: `{ "tables": [42] }`,
 			function: handleQuery,
 			errorstr: "cannot unmarshal number",
 		},
 		{
-			name: "fail JSON query where table is string",
-			path: "/ldp/db/query",
+			name:     "fail JSON query where table is string",
+			path:     "/ldp/db/query",
 			sendData: `{ "tables": ["water"] }`,
 			function: handleQuery,
 			errorstr: "cannot unmarshal string",
 		},
 		{
-			name: "simple query with dummy results",
-			path: "/ldp/db/query",
+			name:     "simple query with dummy results",
+			path:     "/ldp/db/query",
 			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users" }] }`,
 			establishMock: func(data interface{}) error {
 				return establishMockForQuery(data.(pgxmock.PgxPoolIface))
@@ -233,8 +231,8 @@ func Test_reportingHandlers(t *testing.T) {
 		},
 		{
 			// This test doesn't really test anything except my ability to mock PGX errors
-			name: "query with an empty filter",
-			path: "/ldp/db/query",
+			name:     "query with an empty filter",
+			path:     "/ldp/db/query",
 			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users", "columnFilters": [{}] }] }`,
 			establishMock: func(data interface{}) error {
 				return establishMockForEmptyFilterQuery(data.(pgxmock.PgxPoolIface))
@@ -243,36 +241,36 @@ func Test_reportingHandlers(t *testing.T) {
 			errorstr: `ERROR: syntax error at or near "=" (SQLSTATE 42601)`,
 		},
 		{
-			name: "malformed report",
-			path: "/ldp/db/reports",
+			name:     "malformed report",
+			path:     "/ldp/db/reports",
 			sendData: `xxx`,
 			function: handleReport,
 			errorstr: "deserialize JSON",
 		},
 		{
-			name: "report without URL",
-			path: "/ldp/db/reports",
+			name:     "report without URL",
+			path:     "/ldp/db/reports",
 			sendData: `{}`,
 			function: handleReport,
 			errorstr: "unsupported protocol scheme",
 		},
 		{
-			name: "report with 404 URL",
-			path: "/ldp/db/reports",
+			name:     "report with 404 URL",
+			path:     "/ldp/db/reports",
 			sendData: `{ "url": "` + baseUrl + `/x/y/z.sql" }`,
 			function: handleReport,
 			errorstr: "404 Not Found",
 		},
 		{
-			name: "report without function declaration",
-			path: "/ldp/db/reports",
+			name:     "report without function declaration",
+			path:     "/ldp/db/reports",
 			sendData: `{ "url": "` + baseUrl + `/reports/noheader.sql" }`,
 			function: handleReport,
 			errorstr: "could not extract SQL function name",
 		},
 		{
-			name: "report that is not valid SQL",
-			path: "/ldp/db/reports",
+			name:     "report that is not valid SQL",
+			path:     "/ldp/db/reports",
 			sendData: `{ "url": "` + baseUrl + `/reports/bad.sql" }`,
 			// pgxmock can't spot the badness of the SQL, so we manually cause an error
 			establishMock: func(data interface{}) error {
@@ -287,8 +285,8 @@ func Test_reportingHandlers(t *testing.T) {
 			errorstr: "could not register SQL function: bad SQL",
 		},
 		{
-			name: "simple report",
-			path: "/ldp/db/reports",
+			name:     "simple report",
+			path:     "/ldp/db/reports",
 			sendData: `{ "url": "` + baseUrl + `/reports/loans.sql" }`,
 			establishMock: func(data interface{}) error {
 				mock := data.(pgxmock.PgxPoolIface)
@@ -333,7 +331,7 @@ func Test_reportingHandlers(t *testing.T) {
 				method = "POST"
 				reader = strings.NewReader(test.sendData)
 			}
-			req := httptest.NewRequest(method, baseUrl + test.path, reader)
+			req := httptest.NewRequest(method, baseUrl+test.path, reader)
 
 			mock, err := pgxmock.NewPool()
 			assert.Nil(t, err)

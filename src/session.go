@@ -8,7 +8,6 @@ import "github.com/jackc/pgx/v5"
 import "github.com/jackc/pgx/v5/pgxpool"
 import "github.com/jackc/pgx/v5/pgconn" // just for the data-type pgconn.CommandTag
 
-
 type PgxIface interface {
 	Begin(context.Context) (pgx.Tx, error)
 	Query(context.Context, string, ...any) (pgx.Rows, error)
@@ -18,14 +17,13 @@ type PgxIface interface {
 }
 
 type ModReportingSession struct {
-	server *ModReportingServer // back-reference
-	url string
-	tenant string
+	server       *ModReportingServer // back-reference
+	url          string
+	tenant       string
 	folioSession foliogo.Session
-	dbConn PgxIface
-	isMDB bool
+	dbConn       PgxIface
+	isMDB        bool
 }
-
 
 /*
  * There are two valid cases:
@@ -43,7 +41,7 @@ func NewModReportingSession(server *ModReportingServer, url string, tenant strin
 
 	session := ModReportingSession{
 		server: server,
-		url: url,
+		url:    url,
 		tenant: tenant,
 	}
 
@@ -70,24 +68,22 @@ func NewModReportingSession(server *ModReportingServer, url string, tenant strin
 	return &session, nil
 }
 
-
-func (session *ModReportingSession)Log(cat string, args ...string) {
+func (session *ModReportingSession) Log(cat string, args ...string) {
 	session.server.Log(cat, args...)
 }
 
-
-func (session *ModReportingSession)makeDbConn(token string) (PgxIface, bool, error) {
+func (session *ModReportingSession) makeDbConn(token string) (PgxIface, bool, error) {
 	dbUrl, dbUser, dbPass, err := getDbInfo(session.folioSession, token)
 	if err != nil {
 		return nil, false, fmt.Errorf("cannot extract data from 'dbinfo': %w", err)
 	}
-	session.Log("db", "url=" + dbUrl + ", user=" + dbUser)
+	session.Log("db", "url="+dbUrl+", user="+dbUser)
 
 	// For historical reasons, database connection configuration is often JDBCish
 	dbUrl = strings.Replace(dbUrl, "jdbc:postgresql://", "", 1)
 	dbUrl = strings.Replace(dbUrl, "postgres://", "", 1)
 	// We may need `?sslmode=require` on the end of the URL.
-	dbConn, err := pgxpool.New(context.Background(), "postgres://" + dbUser + ":" + dbPass + "@" + dbUrl)
+	dbConn, err := pgxpool.New(context.Background(), "postgres://"+dbUser+":"+dbPass+"@"+dbUrl)
 	if err != nil {
 		return nil, false, fmt.Errorf("cannot connect to DB: %w", err)
 	}
@@ -101,7 +97,6 @@ func (session *ModReportingSession)makeDbConn(token string) (PgxIface, bool, err
 	session.Log("db", fmt.Sprintf("isMetaDB=%v", isMDB))
 	return dbConn, isMDB, nil
 }
-
 
 func (session *ModReportingSession) findDbConn(token string) (PgxIface, error) {
 	if session.dbConn == nil {

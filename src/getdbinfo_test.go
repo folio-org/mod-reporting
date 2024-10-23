@@ -4,7 +4,6 @@ import "os"
 import "testing"
 import "github.com/stretchr/testify/assert"
 
-
 func Test_getDbInfo(t *testing.T) {
 	ts := MakeDummyModSettingsServer()
 	defer ts.Close()

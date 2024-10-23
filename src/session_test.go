@@ -4,7 +4,6 @@ import "os"
 import "testing"
 import "github.com/stretchr/testify/assert"
 
-
 func Test_session(t *testing.T) {
 	ts := MakeDummyModSettingsServer()
 	defer ts.Close()
@@ -42,7 +41,7 @@ func Test_session(t *testing.T) {
 		assert.ErrorContains(t, err, "no such host")
 	})
 
- 	makeGoodSession := func(t *testing.T) *ModReportingSession {
+	makeGoodSession := func(t *testing.T) *ModReportingSession {
 		os.Setenv("OKAPI_URL", ts.URL)
 		os.Setenv("OKAPI_TENANT", "diku")
 		os.Setenv("OKAPI_USER", "mike")
@@ -57,15 +56,15 @@ func Test_session(t *testing.T) {
 		session.Log("x", "exercise the logging function just for code-coverage")
 	})
 
-        // Removing this test for now, as making the is-this-MetaDB
-        // check work correctly would involve a lot of work to
-        // establish a pgxmock
+	// Removing this test for now, as making the is-this-MetaDB
+	// check work correctly would involve a lot of work to
+	// establish a pgxmock
 	/*
-	t.Run("find reporting database connection", func(t *testing.T) {
-		session := makeGoodSession(t)
-		db, error := session.findDbConn("")
-		assert.Nil(t, error)
-		assert.NotNil(t, db) // That's all we can ask about this opaque object
-	})
+		t.Run("find reporting database connection", func(t *testing.T) {
+			session := makeGoodSession(t)
+			db, error := session.findDbConn("")
+			assert.Nil(t, error)
+			assert.NotNil(t, db) // That's all we can ask about this opaque object
+		})
 	*/
 }

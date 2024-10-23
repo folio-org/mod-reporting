@@ -7,9 +7,8 @@ import "fmt"
 import "encoding/json"
 import "github.com/indexdata/foliogo"
 
-
 type settingsValue struct {
-	Url string `json:"url"`
+	Url  string `json:"url"`
 	Pass string `json:"pass"`
 	User string `json:"user"`
 }
@@ -23,10 +22,9 @@ type settingsResultInfo struct {
 }
 
 type settingsResponse struct {
-	Items []settingsItem `json:"items"`
+	Items      []settingsItem     `json:"items"`
 	ResultInfo settingsResultInfo `json:"resultInfo"`
 }
-
 
 // If the value is encoded as a string: see issue #60
 type oldSettingsItem struct {
@@ -34,10 +32,9 @@ type oldSettingsItem struct {
 }
 
 type oldSettingsResponse struct {
-	Items []oldSettingsItem `json:"items"`
+	Items      []oldSettingsItem  `json:"items"`
 	ResultInfo settingsResultInfo `json:"resultInfo"`
 }
-
 
 func getDbInfo(session foliogo.Session, token string) (string, string, string, error) {
 	// If defined, environment variables override the setting from the database
@@ -48,7 +45,7 @@ func getDbInfo(session foliogo.Session, token string) (string, string, string, e
 		return dburl, dbuser, dbpass, nil
 	}
 
-	params := foliogo.RequestParams{ Token: token }
+	params := foliogo.RequestParams{Token: token}
 	bytes, err := session.Fetch(`settings/entries?query=scope=="ui-ldp.admin"+and+key=="dbinfo"`, params)
 	if err != nil {
 		return "", "", "", fmt.Errorf("cannot fetch 'dbinfo' from config: : %w", err)
@@ -80,7 +77,6 @@ func getDbInfo(session foliogo.Session, token string) (string, string, string, e
 	return value.Url, value.User, value.Pass, nil
 }
 
-
 func convertResultInfo(oldR oldSettingsResponse, r *settingsResponse) error {
 	r.ResultInfo = oldR.ResultInfo
 
@@ -95,4 +91,3 @@ func convertResultInfo(oldR oldSettingsResponse, r *settingsResponse) error {
 
 	return nil
 }
-

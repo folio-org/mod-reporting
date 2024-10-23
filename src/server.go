@@ -6,32 +6,29 @@ import "time"
 import "strings"
 import "github.com/MikeTaylor/catlogger"
 
-
 type handlerFn func(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error
 
-
 type ModReportingServer struct {
-	config *config
-	logger *catlogger.Logger
-	root string
-	server http.Server
+	config   *config
+	logger   *catlogger.Logger
+	root     string
+	server   http.Server
 	sessions map[string]*ModReportingSession
 }
-
 
 func MakeModReportingServer(cfg *config, logger *catlogger.Logger, root string) *ModReportingServer {
 	tr := &http.Transport{}
 	tr.RegisterProtocol("file", http.NewFileTransport(http.Dir(root)))
 
 	mux := http.NewServeMux()
-	var server = ModReportingServer {
+	var server = ModReportingServer{
 		config: cfg,
 		logger: logger,
-		root: root,
+		root:   root,
 		server: http.Server{
 			ReadTimeout:  30 * time.Second,
 			WriteTimeout: 30 * time.Second,
-			Handler: mux,
+			Handler:      mux,
 		},
 		sessions: map[string]*ModReportingSession{},
 	}
@@ -45,17 +42,14 @@ func MakeModReportingServer(cfg *config, logger *catlogger.Logger, root string) 
 	return &server
 }
 
-
 // Intended only for ModReportingSession to pass the session logger though to foliogo
-func (server *ModReportingServer)GetLogger() *catlogger.Logger{
+func (server *ModReportingServer) GetLogger() *catlogger.Logger {
 	return server.logger
 }
 
-
-func (server *ModReportingServer)Log(cat string, args ...string) {
+func (server *ModReportingServer) Log(cat string, args ...string) {
 	server.logger.Log(cat, args...)
 }
-
 
 func (server *ModReportingServer) launch() error {
 	cfg := server.config
@@ -66,7 +60,6 @@ func (server *ModReportingServer) launch() error {
 	server.Log("listen", "finished listening on", hostspec)
 	return err
 }
-
 
 // We maintain a map of tenant:url to session
 func (server *ModReportingServer) findSession(url string, tenant string) (*ModReportingSession, error) {
@@ -84,7 +77,6 @@ func (server *ModReportingServer) findSession(url string, tenant string) (*ModRe
 	server.sessions[key] = session
 	return session, nil
 }
-
 
 func handler(w http.ResponseWriter, req *http.Request, server *ModReportingServer) {
 	path := req.URL.Path
@@ -125,7 +117,6 @@ This is <a href="https://github.com/folio-org/mod-reporting">mod-reporting</a>. 
 		fmt.Fprintln(w, "Not found")
 	}
 }
-
 
 func runWithErrorHandling(w http.ResponseWriter, req *http.Request, server *ModReportingServer, f handlerFn) {
 	host := req.Header.Get("X-Okapi-Url")

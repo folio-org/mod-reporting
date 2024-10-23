@@ -6,56 +6,55 @@ import "testing"
 import "github.com/stretchr/testify/assert"
 import "net/http/httptest"
 
-
 func Test_handleConfig(t *testing.T) {
 	tests := []testT{
 		{
-			name: "fetch all configs from table",
-			path: "/ldp/config",
+			name:     "fetch all configs from table",
+			path:     "/ldp/config",
 			function: handleConfig,
 			expected: `\[{"key":"config","tenant":"dummyTenant","value":"v1"}\]`,
 		},
 		{
-			name: "fetch single config",
-			path: "/ldp/config/dbinfo",
+			name:     "fetch single config",
+			path:     "/ldp/config/dbinfo",
 			function: handleConfigKey,
 			expected: `{"key":"dbinfo","tenant":"dummyTenant","value":`,
 		},
 		{
-			name: "non-existent config",
-			path: "/ldp/config/not-there",
+			name:     "non-existent config",
+			path:     "/ldp/config/not-there",
 			function: handleConfigKey,
 			errorstr: "no config item with key",
 		},
 		{
-			name: "fetch malformed config",
-			path: "/ldp/config/bad",
+			name:     "fetch malformed config",
+			path:     "/ldp/config/bad",
 			function: handleConfigKey,
 			errorstr: "could not deserialize",
 		},
 		{
-			name: "translate non-string value",
-			path: "/ldp/config/non-string",
+			name:     "translate non-string value",
+			path:     "/ldp/config/non-string",
 			function: handleConfigKey,
 			expected: `{"key":"non-string","tenant":"dummyTenant","value":"{\\|"v3\\\":42}"}`,
 		},
 		{
-			name: "failure to reach mod-settings",
-			path: "/ldp/config/non-string",
-			function: handleConfig,
-			errorstr: "could not fetch from mod-settings",
+			name:          "failure to reach mod-settings",
+			path:          "/ldp/config/non-string",
+			function:      handleConfig,
+			errorstr:      "could not fetch from mod-settings",
 			useBadSession: true,
 		},
 		{
-			name: "write a new config value",
-			path: "/ldp/config/foo",
+			name:     "write a new config value",
+			path:     "/ldp/config/foo",
 			sendData: `{"key":"foo","tenant":"xxx","value":"{\"user\":\"abc123\"}"}`,
 			function: handleConfigKey,
 			expected: "abc123",
 		},
 		{
-			name: "rewrite an existing config value",
-			path: "/ldp/config/dbinfo",
+			name:     "rewrite an existing config value",
+			path:     "/ldp/config/dbinfo",
 			sendData: `{"key":"dbinfo","tenant":"xxx","value":"{\"user\":\"abc456\"}"}`,
 			function: handleConfigKey,
 			expected: "abc456",
@@ -70,7 +69,7 @@ func Test_handleConfig(t *testing.T) {
 	server := MakeModReportingServer(nil, nil, "")
 	session, err := NewModReportingSession(server, baseUrl, "dummyTenant")
 	assert.Nil(t, err)
-	badSession, err := NewModReportingSession(server, "x" + baseUrl, "dummyTenant")
+	badSession, err := NewModReportingSession(server, "x"+baseUrl, "dummyTenant")
 	assert.Nil(t, err)
 
 	for i, test := range tests {
@@ -81,7 +80,7 @@ func Test_handleConfig(t *testing.T) {
 				method = "PUT"
 				reader = strings.NewReader(test.sendData)
 			}
-			req := httptest.NewRequest(method, baseUrl + test.path, reader)
+			req := httptest.NewRequest(method, baseUrl+test.path, reader)
 			if i == 0 {
 				// Just to exercise a code-path, and get slightly more coverage *sigh*
 				req.Header.Add("X-Okapi-Token", "dummy")

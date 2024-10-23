@@ -3,7 +3,6 @@ package main
 import "testing"
 import "github.com/stretchr/testify/assert"
 
-
 func Test_MakeConfiguredServer(t *testing.T) {
 	t.Run("successful", func(t *testing.T) {
 		server, err := MakeConfiguredServer("../etc/silent.json", ".")
