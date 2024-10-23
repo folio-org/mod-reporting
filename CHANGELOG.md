@@ -1,5 +1,9 @@
 # Change history for mod-reporting
 
+## [1.2.0](https://github.com/folio-org/mod-reporting/tree/v1.2.0) (IN PROGRESS)
+
+* Upgrade required Go version to current (from 1.21.3 to 1.23.2), to allow more up-to-date vulnerability checking. Fixes MODREP-13.
+
 ## [1.1.0](https://github.com/folio-org/mod-reporting/tree/v1.1.0) (2024-10-18)
 
 * Modify permission names for the convenience of Eureka. Each endpoint is now governed my its own permission instead of `ldp.read` governing logs/tables/columns/query/reports. For backwards-compatibility, `ldp.read` is retained as an umbrella that contains all five new fine-grained permissions. Fixes MODREP-7.
