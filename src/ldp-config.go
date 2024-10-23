@@ -225,5 +225,4 @@ func writeConfigKey(w http.ResponseWriter, req *http.Request, session *ModReport
 	}
 	_, err = w.Write(bytes)
 	return err
-
 }
