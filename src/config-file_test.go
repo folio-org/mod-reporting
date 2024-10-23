@@ -4,7 +4,6 @@ import "reflect"
 import "testing"
 import "github.com/stretchr/testify/assert"
 
-
 func Test_readConfig(t *testing.T) {
 	t.Run("non-existent config file", func(t *testing.T) {
 		cfg, err := readConfig("/no/such/file.json")

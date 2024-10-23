@@ -11,7 +11,6 @@ import "regexp"
 import "github.com/pashagolub/pgxmock/v3"
 import "github.com/stretchr/testify/assert"
 
-
 func Test_server(t *testing.T) {
 	ts := MakeDummyModSettingsServer()
 	defer ts.Close()
@@ -19,7 +18,7 @@ func Test_server(t *testing.T) {
 	assert.Nil(t, err)
 	session, err := NewModReportingSession(server, ts.URL, "t1")
 	assert.Nil(t, err)
-	server.sessions[":" + ts.URL] = session
+	server.sessions[":"+ts.URL] = session
 
 	go func() {
 		err = server.launch()
@@ -34,55 +33,54 @@ func Test_server(t *testing.T) {
 	}
 }
 
-
 func runTests(t *testing.T, baseUrl string, session *ModReportingSession) {
 	data := []testT{
 		{
-			name: "home",
-			status: 200,
+			name:     "home",
+			status:   200,
 			expected: "This is .*mod-reporting",
 		},
 		{
-			name: "health check",
-			path: "admin/health",
-			status: 200,
+			name:     "health check",
+			path:     "admin/health",
+			status:   200,
 			expected: "Behold!",
 		},
 		{
-			name: "short bad path",
-			path: "foo",
+			name:   "short bad path",
+			path:   "foo",
 			status: 404,
 		},
 		{
-			name: "long bad path",
-			path: "foo/bar/baz",
+			name:   "long bad path",
+			path:   "foo/bar/baz",
 			status: 404,
 		},
 		{
-			name: "get all config",
-			path: "ldp/config",
-			status: 200,
+			name:     "get all config",
+			path:     "ldp/config",
+			status:   200,
 			expected: `\[{"key":"config","tenant":"t1","value":"v1"}\]`,
 		},
 		{
-			name: "get single config",
-			path: "ldp/config/dbinfo",
-			status: 200,
+			name:     "get single config",
+			path:     "ldp/config/dbinfo",
+			status:   200,
 			expected: `{"key":"dbinfo","tenant":"t1","value":"{\\"pass\\":\\"pw\\",\\"url\\":\\"dummyUrl\\",\\"user\\":\\"fiona\\"}"}`,
 		},
 		{
-			name: "create new config",
+			name:     "create new config",
 			sendData: `{"key":"foo","tenant":"xxx","value":"{\"user\":\"abc123\"}"}`,
-			path: "ldp/config/foo",
-			status: 200,
+			path:     "ldp/config/foo",
+			status:   200,
 			expected: "abc123",
 		},
 		{
-			name: "rewrite existing config",
+			name:     "rewrite existing config",
 			sendData: `{"key":"dbinfo","tenant":"xxx","value":"{\"user\":\"abc456\"}"}`,
-			path: "ldp/config/dbinfo",
-			status: 200,
-			expected: "abc456" ,
+			path:     "ldp/config/dbinfo",
+			status:   200,
+			expected: "abc456",
 		},
 		{
 			name: "fetch tables",
@@ -90,7 +88,7 @@ func runTests(t *testing.T, baseUrl string, session *ModReportingSession) {
 			establishMock: func(data interface{}) error {
 				return establishMockForTables(data.(pgxmock.PgxPoolIface))
 			},
-			status: 200,
+			status:   200,
 			expected: `\[{"tableSchema":"folio_inventory","tableName":"records_instances"},{"tableSchema":"folio_inventory","tableName":"holdings_record"}\]`,
 		},
 		{
@@ -99,17 +97,17 @@ func runTests(t *testing.T, baseUrl string, session *ModReportingSession) {
 			establishMock: func(data interface{}) error {
 				return establishMockForColumns(data.(pgxmock.PgxPoolIface))
 			},
-			status: 200,
+			status:   200,
 			expected: `{"columnName":"id","data_type":"uuid","tableSchema":"folio_users","tableName":"users","ordinalPosition":"6"},{"columnName":"creation_date","data_type":"timestamp without time zone","tableSchema":"folio_users","tableName":"users","ordinalPosition":"8"}]`,
 		},
 		{
-			name: "reporting query",
-			path: "ldp/db/query",
+			name:     "reporting query",
+			path:     "ldp/db/query",
 			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users" }] }`,
 			establishMock: func(data interface{}) error {
 				return establishMockForQuery(data.(pgxmock.PgxPoolIface))
 			},
-			status: 200,
+			status:   200,
 			expected: `\[{"email":"mike@example.com","name":"mike"},{"email":"fiona@example.com","name":"fiona"}\]`,
 		},
 		{
@@ -122,7 +120,7 @@ func runTests(t *testing.T, baseUrl string, session *ModReportingSession) {
 			establishMock: func(data interface{}) error {
 				return establishMockForReport(data.(pgxmock.PgxPoolIface))
 			},
-			status: 200,
+			status:   200,
 			expected: `{"totalRecords":2,"records":\[{"id":"5a9a92ca-ba05-d72d-f84c-31921f1f7e4d","num":29},{"id":"456","num":3}\]}`,
 		},
 	}
@@ -134,7 +132,9 @@ func runTests(t *testing.T, baseUrl string, session *ModReportingSession) {
 			if d.sendData != "" {
 				method = "PUT"
 				// Method determination is a bit of a hack
-				if strings.HasPrefix(d.path, "ldp/db/") { method = "POST" }
+				if strings.HasPrefix(d.path, "ldp/db/") {
+					method = "POST"
+				}
 				bodyReader = strings.NewReader(d.sendData)
 			}
 

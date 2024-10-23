@@ -32,6 +32,9 @@ test1:
 cover: coverage.out
 	go tool cover -html=coverage.out
 
+fmt:
+	go fmt ./...
+
 clean:
 	rm -f $(TARGET) coverage.out coverage.json
 

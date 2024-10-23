@@ -9,7 +9,6 @@ import "net/http"
 import "encoding/json"
 import "github.com/jackc/pgx/v5"
 
-
 // Determine whether this is a MetaDB database, as opposed to LDP Classic
 func isMetaDB(dbConn PgxIface) (bool, error) {
 	var val int
@@ -26,20 +25,18 @@ func isMetaDB(dbConn PgxIface) (bool, error) {
 	return false, nil
 }
 
-
 type dbTable struct {
 	SchemaName string `db:"schema_name" json:"tableSchema"`
-	TableName string `db:"table_name" json:"tableName"`
+	TableName  string `db:"table_name" json:"tableName"`
 }
 
 type dbColumn struct {
-	ColumnName string `db:"column_name" json:"columnName"`
-	DataType string `db:"data_type" json:"data_type"`
-	TableSchema string `db:"table_schema" json:"tableSchema"`
-	TableName string `db:"table_name" json:"tableName"`
+	ColumnName      string `db:"column_name" json:"columnName"`
+	DataType        string `db:"data_type" json:"data_type"`
+	TableSchema     string `db:"table_schema" json:"tableSchema"`
+	TableName       string `db:"table_name" json:"tableName"`
 	OrdinalPosition string `db:"ordinal_position" json:"ordinalPosition"`
 }
-
 
 func handleTables(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
 	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
@@ -53,7 +50,6 @@ func handleTables(w http.ResponseWriter, req *http.Request, session *ModReportin
 
 	return sendJSON(w, tables, "tables")
 }
-
 
 func fetchTables(dbConn PgxIface, isMetaDB bool) ([]dbTable, error) {
 	var query string
@@ -78,7 +74,6 @@ func fetchTables(dbConn PgxIface, isMetaDB bool) ([]dbTable, error) {
 	return pgx.CollectRows(rows, pgx.RowToStructByName[dbTable])
 }
 
-
 func handleColumns(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
 	v := req.URL.Query()
 	schema := v.Get("schema")
@@ -99,7 +94,6 @@ func handleColumns(w http.ResponseWriter, req *http.Request, session *ModReporti
 	return sendJSON(w, columns, "columns")
 }
 
-
 func fetchColumns(dbConn PgxIface, schema string, table string) ([]dbColumn, error) {
 	// This seems to work for both MetaDB and LDP Classic
 	cols := "column_name, data_type, ordinal_position, table_schema, table_name"
@@ -111,41 +105,39 @@ func fetchColumns(dbConn PgxIface, schema string, table string) ([]dbColumn, err
 	}
 	defer rows.Close()
 	/*
-	for rows.Next() {
-		val, _ := rows.Values()
-		fmt.Printf("column 3: %T, %+v\n", val[2], val[2])
-	}
+		for rows.Next() {
+			val, _ := rows.Values()
+			fmt.Printf("column 3: %T, %+v\n", val[2], val[2])
+		}
 	*/
 
 	return pgx.CollectRows(rows, pgx.RowToStructByName[dbColumn])
 }
 
-
 type queryFilter struct {
-	Key string `json:"key"`
-	Op string `json:"op"`
+	Key   string `json:"key"`
+	Op    string `json:"op"`
 	Value string `json:"value"`
 }
 
 type queryOrder struct {
-	Key string `json:"key"`
+	Key       string `json:"key"`
 	Direction string `json:"direction"`
-	Nulls string `json:"nulls"`
+	Nulls     string `json:"nulls"`
 }
 
 type queryTable struct {
-	Schema string `json:"schema"`
-	Table string `json:"tableName"`
+	Schema  string        `json:"schema"`
+	Table   string        `json:"tableName"`
 	Filters []queryFilter `json:"columnFilters"`
-	Columns []string `json:"showColumns"`
-	Order []queryOrder `json:"orderBy"`
-	Limit int `json:"limit"`
+	Columns []string      `json:"showColumns"`
+	Order   []queryOrder  `json:"orderBy"`
+	Limit   int           `json:"limit"`
 }
 
 type jsonQuery struct {
 	Tables []queryTable `json:"tables"`
 }
-
 
 func handleQuery(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
 	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
@@ -182,7 +174,6 @@ func handleQuery(w http.ResponseWriter, req *http.Request, session *ModReporting
 	return sendJSON(w, result, "query result")
 }
 
-
 func makeSql(query jsonQuery) (string, []any, error) {
 	if len(query.Tables) != 1 {
 		return "", nil, fmt.Errorf("query must have exactly one table")
@@ -204,14 +195,13 @@ func makeSql(query jsonQuery) (string, []any, error) {
 	return sql, params, nil
 }
 
-
 func makeColumns(cols []string) string {
 	if len(cols) == 0 {
 		return "*"
 	}
 
 	s := ""
-	for i, col := range(cols) {
+	for i, col := range cols {
 		s += col
 		if i < len(cols)-1 {
 			s += ", "
@@ -221,12 +211,11 @@ func makeColumns(cols []string) string {
 	return s
 }
 
-
 func makeCond(filters []queryFilter) (string, []any) {
 	params := make([]any, 0)
 
 	s := ""
-	for i, filter := range(filters) {
+	for i, filter := range filters {
 		if filter.Key == "" {
 			continue
 		}
@@ -247,10 +236,9 @@ func makeCond(filters []queryFilter) (string, []any) {
 	return s, params
 }
 
-
 func makeOrder(orders []queryOrder) string {
 	s := ""
-	for i, order := range(orders) {
+	for i, order := range orders {
 		s += order.Key
 		s += " " + order.Direction
 		// Historically, ui-ldp sends "start" or "end"
@@ -269,16 +257,15 @@ func makeOrder(orders []queryOrder) string {
 	return s
 }
 
-
 type reportQuery struct {
-	Url string `json:"url"`
+	Url    string            `json:"url"`
 	Params map[string]string `json:"params"`
-	Limit int `json:"limit"`
+	Limit  int               `json:"limit"`
 }
 
 type reportResponse struct {
-	TotalRecords int `json:"totalRecords"`
-	Records []map[string]any `json:"records"`
+	TotalRecords int              `json:"totalRecords"`
+	Records      []map[string]any `json:"records"`
 }
 
 func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
@@ -358,18 +345,16 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 	count := len(result) // This is redundant, but it's in the old API so we retain it here
 	response := reportResponse{
 		TotalRecords: count,
-		Records: result,
+		Records:      result,
 	}
 
 	return sendJSON(w, response, "report result")
 }
 
-
 func validateUrl(_url string) error {
 	// We could sanitize the URL, rejecting requests using unauthorized sources: see issue #36
 	return nil
 }
-
 
 func makeFunctionCall(sql string, params map[string]string, limit int) (string, []any, error) {
 	orderedParams := make([]any, 0)
@@ -382,7 +367,7 @@ func makeFunctionCall(sql string, params map[string]string, limit int) (string, 
 
 	s := make([]string, 0, len(params))
 	i := 1
-	for key, val := range(params) {
+	for key, val := range params {
 		s = append(s, fmt.Sprintf("%s => $%d", key, i))
 		orderedParams = append(orderedParams, val)
 		i++
@@ -395,7 +380,6 @@ func makeFunctionCall(sql string, params map[string]string, limit int) (string, 
 
 	return cmd, orderedParams, nil
 }
-
 
 func collectAndFixRows(rows pgx.Rows) ([]map[string]any, error) {
 	records, err := pgx.CollectRows(rows, pgx.RowToMap)
@@ -419,7 +403,6 @@ func collectAndFixRows(rows pgx.Rows) ([]map[string]any, error) {
 
 	return records, nil
 }
-
 
 func sendJSON(w http.ResponseWriter, data any, caption string) error {
 	bytes, err := json.Marshal(data)
