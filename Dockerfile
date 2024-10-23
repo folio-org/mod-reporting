@@ -1,7 +1,7 @@
 # Build with: docker build -t mod-reporting .
 # Run with: docker run -p 12369:12369 -e OKAPI_PW=[DIKU_ADMIN-PASSWORD] mod-reporting
 
-FROM golang:1.21
+FROM golang:1.23
 
 ENV APP_DIR=/app
 
