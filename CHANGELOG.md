@@ -1,6 +1,6 @@
 # Change history for mod-reporting
 
-## [1.2.0](https://github.com/folio-org/mod-reporting/tree/v1.2.0) (IN PROGRESS)
+## [1.2.0](https://github.com/folio-org/mod-reporting/tree/v1.2.0) (2024-10-29)
 
 * Upgrade required Go version to current (from 1.21.3 to 1.23.2), to allow more up-to-date vulnerability checking. Fixes MODREP-13.
 * Add `govulncheck` to `make lint` target, patch detected vulnerabilities. Fixes MODREP-14.
