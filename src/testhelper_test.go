@@ -193,4 +193,3 @@ func establishMockForLogs(mock pgxmock.PgxPoolIface) error {
 			AddRow(ts3, "WARNING", "runsql: operator does not exist"))
 	return nil
 }
-
