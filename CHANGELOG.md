@@ -1,5 +1,9 @@
 # Change history for mod-reporting
 
+## [1.3.0](https://github.com/folio-org/mod-reporting/tree/v1.3.0) (IN PROGRESS)
+
+* Implement `/ldp/db/log`, add tests. This is in the module descriptor, so it's needed for full compatibility. Fixes MODREP-8.
+
 ## [1.2.0](https://github.com/folio-org/mod-reporting/tree/v1.2.0) (2024-10-29)
 
 * Upgrade required Go version to current (from 1.21.3 to 1.23.2), to allow more up-to-date vulnerability checking. Fixes MODREP-13.

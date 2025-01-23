@@ -123,6 +123,15 @@ func runTests(t *testing.T, baseUrl string, session *ModReportingSession) {
 			status:   200,
 			expected: `{"totalRecords":2,"records":\[{"id":"5a9a92ca-ba05-d72d-f84c-31921f1f7e4d","num":29},{"id":"456","num":3}\]}`,
 		},
+		{
+			name: "fetch logs",
+			path: "ldp/db/log",
+			establishMock: func(data interface{}) error {
+				return establishMockForLogs(data.(pgxmock.PgxPoolIface))
+			},
+			status:   200,
+			expected: `\[{"log_time":"2023-10-04T23:38:57.662\+01:00","error_severity":"INFO","message":"starting Metadb v1.2.0-beta7"}.*exist"}\]`,
+		},
 	}
 
 	for _, d := range data {

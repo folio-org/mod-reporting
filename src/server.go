@@ -92,6 +92,7 @@ This is <a href="https://github.com/folio-org/mod-reporting">mod-reporting</a>. 
   <li><a href="/ldp/config">Legacy configuration WSAPI</a></li>
   <li><a href="/ldp/db/tables">List tables from reporting database</a></li>
   <li><a href="/ldp/db/columns?schema=folio_users&table=users">List columns for "users" table</a></li>
+  <li><a href="/ldp/db/log">Logs</a></li>
 </ul>`)
 		return
 	} else if path == "/admin/health" {
@@ -111,6 +112,8 @@ This is <a href="https://github.com/folio-org/mod-reporting">mod-reporting</a>. 
 		runWithErrorHandling(w, req, server, handleQuery)
 	} else if path == "/ldp/db/reports" && req.Method == "POST" {
 		runWithErrorHandling(w, req, server, handleReport)
+	} else if path == "/ldp/db/log" {
+		runWithErrorHandling(w, req, server, handleLogs)
 	} else {
 		// Unrecognized
 		w.WriteHeader(http.StatusNotFound)
