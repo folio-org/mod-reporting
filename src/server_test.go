@@ -70,14 +70,14 @@ func runTests(t *testing.T, baseUrl string, session *ModReportingSession) {
 		},
 		{
 			name:     "create new config",
-			sendData: `{"key":"foo","tenant":"xxx","value":"{\"user\":\"abc123\"}"}`,
+			sendData: `{"key":"foo","tenant":"diku","value":"{\"user\":\"abc123\"}"}`,
 			path:     "ldp/config/foo",
 			status:   200,
 			expected: "abc123",
 		},
 		{
 			name:     "rewrite existing config",
-			sendData: `{"key":"dbinfo","tenant":"xxx","value":"{\"user\":\"abc456\"}"}`,
+			sendData: `{"key":"dbinfo","tenant":"diku","value":"{\"user\":\"abc456\"}"}`,
 			path:     "ldp/config/dbinfo",
 			status:   200,
 			expected: "abc456",
