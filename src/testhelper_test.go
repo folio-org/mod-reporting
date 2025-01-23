@@ -1,6 +1,7 @@
 package main
 
 import "errors"
+import "time"
 import "fmt"
 import "net/http"
 import "net/http/httptest"
@@ -179,3 +180,17 @@ func establishMockForReport(mock pgxmock.PgxPoolIface) error {
 	mock.ExpectRollback()
 	return nil
 }
+
+func establishMockForLogs(mock pgxmock.PgxPoolIface) error {
+	ts1, _ := time.Parse(time.RFC3339, "2023-10-04T23:38:57.662+01:00")
+	ts2, _ := time.Parse(time.RFC3339, "2023-10-05T00:40:25.571+01:00")
+	ts3, _ := time.Parse(time.RFC3339, "2023-10-05T00:34:14.76+01:00")
+
+	mock.ExpectQuery("SELECT log_time, error_severity, message FROM metadb.log").WillReturnRows(
+		pgxmock.NewRows([]string{"log_time", "error_severity", "message"}).
+			AddRow(ts1, "INFO", "starting Metadb v1.2.0-beta7").
+			AddRow(ts2, "INFO", "source \"folio\" snapshot complete").
+			AddRow(ts3, "WARNING", "runsql: operator does not exist"))
+	return nil
+}
+

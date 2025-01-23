@@ -134,6 +134,12 @@ func Test_reportingHandlers(t *testing.T) {
 			errorstr:      "failed to connect",
 		},
 		{
+			name:          "bad DB connection for logs",
+			useBadSession: true,
+			function:      handleLogs,
+			errorstr:      "failed to connect",
+		},
+		{
 			name: "retrieve list of tables",
 			path: "/ldp/db/tables",
 			establishMock: func(data interface{}) error {
@@ -315,6 +321,15 @@ func Test_reportingHandlers(t *testing.T) {
 			},
 			function: handleReport,
 			expected: `{"totalRecords":2,"records":\[{"id":"5a9a92ca-ba05-d72d-f84c-31921f1f7e4d","num":29},{"id":"456","num":3}\]}`,
+		},
+		{
+			name: "retrieve logs",
+			path: "/ldp/db/logs",
+			establishMock: func(data interface{}) error {
+				return establishMockForLogs(data.(pgxmock.PgxPoolIface))
+			},
+			function: handleLogs,
+			expected: `\[{"log_time":"2023-10-04T23:38:57.662\+01:00","error_severity":"INFO","message":"starting Metadb v1.2.0-beta7"}.*exist"}\]`,
 		},
 	}
 
