@@ -48,14 +48,14 @@ func Test_handleConfig(t *testing.T) {
 		{
 			name:     "write a new config value",
 			path:     "/ldp/config/foo",
-			sendData: `{"key":"foo","tenant":"xxx","value":"{\"user\":\"abc123\"}"}`,
+			sendData: `{"key":"foo","tenant":"diku","value":"{\"user\":\"abc123\"}"}`,
 			function: handleConfigKey,
 			expected: "abc123",
 		},
 		{
 			name:     "rewrite an existing config value",
 			path:     "/ldp/config/dbinfo",
-			sendData: `{"key":"dbinfo","tenant":"xxx","value":"{\"user\":\"abc456\"}"}`,
+			sendData: `{"key":"dbinfo","tenant":"diku","value":"{\"user\":\"abc456\"}"}`,
 			function: handleConfigKey,
 			expected: "abc456",
 		},

@@ -243,7 +243,7 @@ func Test_reportingHandlers(t *testing.T) {
 		{
 			name:     "malformed report",
 			path:     "/ldp/db/reports",
-			sendData: `xxx`,
+			sendData: `a non-JSON string`,
 			function: handleReport,
 			errorstr: "deserialize JSON",
 		},
