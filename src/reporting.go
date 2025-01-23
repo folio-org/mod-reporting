@@ -3,6 +3,7 @@ package main
 import "context"
 import "io"
 import "strings"
+import "time"
 import "fmt"
 import "regexp"
 import "net/http"
@@ -349,6 +350,32 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 	}
 
 	return sendJSON(w, response, "report result")
+}
+
+type dbLogEntry struct {
+	LogTime       time.Time `db:"log_time" json:"log_time"`
+	ErrorSeverity string    `db:"error_severity" json:"error_severity"`
+	Message       string    `db:"message" json:"message"`
+}
+
+func handleLogs(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
+	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
+	if err != nil {
+		return fmt.Errorf("could not find reporting DB: %w", err)
+	}
+
+	rows, err := dbConn.Query(context.Background(), "SELECT log_time, error_severity, message FROM metadb.log")
+	if err != nil {
+		return fmt.Errorf("could not fetch logs from reporting DB: %w", err)
+	}
+	defer rows.Close()
+
+	logs, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbLogEntry])
+	if err != nil {
+		return fmt.Errorf("could not gather rows of logs from reporting DB: %w", err)
+	}
+
+	return sendJSON(w, logs, "logs")
 }
 
 func validateUrl(_url string) error {
