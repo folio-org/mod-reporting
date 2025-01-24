@@ -378,6 +378,38 @@ func handleLogs(w http.ResponseWriter, req *http.Request, session *ModReportingS
 	return sendJSON(w, logs, "logs")
 }
 
+type dbVersion struct {
+	RawVersion string `db:"mdbversion"`
+}
+
+type dbVersionForJson struct {
+	RawVersion string `json:"rawVersion"`
+	Version string `json:"version"`
+}
+
+func handleVersion(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
+	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
+	if err != nil {
+		return fmt.Errorf("could not find reporting DB: %w", err)
+	}
+
+	rows, err := dbConn.Query(context.Background(), "SELECT mdbversion()")
+	if err != nil {
+		return fmt.Errorf("could not fetch version from reporting DB: %w", err)
+	}
+	defer rows.Close()
+
+	versions, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbVersion])
+	if err != nil {
+		return fmt.Errorf("could not gather rows of version from reporting DB: %w", err)
+	}
+
+	row := versions[0]
+	jsonRow := dbVersionForJson{row.RawVersion, ""}
+	jsonRow.Version = strings.Replace(row.RawVersion, "Metadb v", "", 1)
+	return sendJSON(w, jsonRow, "version")
+}
+
 func validateUrl(_url string) error {
 	// We could sanitize the URL, rejecting requests using unauthorized sources: see issue #36
 	return nil
