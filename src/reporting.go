@@ -410,6 +410,33 @@ func handleVersion(w http.ResponseWriter, req *http.Request, session *ModReporti
 	return sendJSON(w, jsonRow, "version")
 }
 
+type dbUpdate struct {
+	TableSchema     string    `db:"schema_name" json:"tableSchema"`
+	TableName       string    `db:"table_name" json:"tableName"`
+	LastUpdate      time.Time `db:"last_update" json:"lastUpdate"`
+	ElapsedRealTime float32   `db:"elapsed_real_time" json:"elapsedRealTime"`
+}
+
+func handleUpdates(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
+	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
+	if err != nil {
+		return fmt.Errorf("could not find reporting DB: %w", err)
+	}
+
+	rows, err := dbConn.Query(context.Background(), "SELECT schema_name, table_name, last_update, elapsed_real_time FROM metadb.table_update ORDER BY elapsed_real_time DESC")
+	if err != nil {
+		return fmt.Errorf("could not fetch updates from reporting DB: %w", err)
+	}
+	defer rows.Close()
+
+	updates, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbUpdate])
+	if err != nil {
+		return fmt.Errorf("could not gather rows of updates from reporting DB: %w", err)
+	}
+
+	return sendJSON(w, updates, "updates")
+}
+
 func validateUrl(_url string) error {
 	// We could sanitize the URL, rejecting requests using unauthorized sources: see issue #36
 	return nil
