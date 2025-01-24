@@ -106,7 +106,7 @@ Access to the FOLIO database is performed using [the foliogo client library](htt
 
 ### FOLIO services and reporting databases
 
-In normal operation, each incoming request is serviced by reference to the Okapi instance that sent it. For development, however, it's possible to override this behaviour and have every outgoing request go to a nominated Okapi instance. This is specified by the environment variables `OKAPI_URL` (e.g https://folio-snapshot-okapi.dev.folio.org) and `OKAPI_TENANT` (e.g. `diku`). When using an Okapi servive specified in this way, authentication onto this instance is done using the values specifid by the environment variables `OKAPI_USER` and `OKAPI_PW`.
+In normal operation, each incoming request is serviced by reference to the Okapi instance that sent it. For development, however, it's possible to override this behaviour and have every outgoing request go to a nominated Okapi instance. This is specified by the environment variables `OKAPI_URL` (e.g https://folio-snapshot-okapi.dev.folio.org) and `OKAPI_TENANT` (e.g. `diku`). When using an Okapi service specified in this way, authentication onto this instance is done using the values specifid by the environment variables `OKAPI_USER` and `OKAPI_PW`.
 
 Similarly, in normal operation, mod-reporting determines which underlying reporting database to connect to on the basis of the information configured in FOLIO -- specifically, in the mod-settings record with scope `ui-ldp.config` and key `dbinfo`, as managed by the "Database configuration" settings page of the Reporting app. However, these configured settings can be overridden if mod-reporting is run with all three of the following environment variables set:
 
