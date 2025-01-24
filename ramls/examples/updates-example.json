@@ -1,0 +1,14 @@
+[
+  {
+    "tableSchema": "folio_derived",
+    "tableName": "agreements_package_content_item",
+    "lastUpdate": "2025-01-24 00:59:48.421449+00",
+    "elapsedRealTime": 0.0452
+  },
+  {
+    "tableSchema": "folio_derived",
+    "tableName": "feesfines_accounts_actions",
+    "lastUpdate": "2025-01-24 00:59:48.909772+00",
+    "elapsedRealTime": 0.0526
+  }
+]

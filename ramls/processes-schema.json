@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Information about long-running searches still in progress",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "databaseName": {
+        "type": "string",
+        "description": "The name of the database that is running the search"
+      },
+      "userName": {
+        "type": "string",
+        "description": "The name of user one whose behalf the search is being run"
+      },
+      "state": {
+        "type": "string",
+        "description": "Current state of the search, .e.g 'active'"
+      },
+      "realTime": {
+        "type": "string",
+        "description": "The time elapsed so far in executing the search, in HH:MM:SS format"
+      },
+      "query": {
+        "type": "string",
+        "description": "The query being executed"
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "databaseName",
+      "userName",
+      "state",
+      "realTime",
+      "query"
+    ]
+  }
+}

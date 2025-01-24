@@ -103,3 +103,33 @@ documentation:
                 type: !include template-results-schema.json
                 example: !include examples/template-results-example.json
 
+    /version:
+      description: "The current Metadb version"
+      get:
+        description: "Return a set of name-value pairs describing the Metadb version and maybe other relevant information"
+        responses:
+          200:
+            body:
+              application/json:
+                type: !include version-schema.json
+                example: !include examples/version-example.json
+    /updates:
+      description: "Details on most recent updates to tables"
+      get:
+        description: "Return a list of tables with their update timestamps"
+        responses:
+          200:
+            body:
+              application/json:
+                type: !include updates-schema.json
+                example: !include examples/updates-example.json
+    /processes:
+      description: "Details on long-running queries still in effect"
+      get:
+        description: "Return a list of long-running queries"
+        responses:
+          200:
+            body:
+              application/json:
+                type: !include processes-schema.json
+                example: !include examples/processes-example.json

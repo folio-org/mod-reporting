@@ -1,0 +1,9 @@
+[
+  {
+    "databaseName": "metadb_indexdata_test",
+    "userName": "folio_app",
+    "state": "active",
+    "realTime": "00:00:04",
+    "query": "select a.message, b.message from metadb.log as a, metadb.log as b;"
+  }
+]
