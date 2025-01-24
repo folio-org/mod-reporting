@@ -95,6 +95,7 @@ This is <a href="https://github.com/folio-org/mod-reporting">mod-reporting</a>. 
   <li><a href="/ldp/db/log">Logs</a></li>
   <li><a href="/ldp/db/version">Version</a></li>
   <li><a href="/ldp/db/updates">Updates</a></li>
+  <li><a href="/ldp/db/processes">Processes</a></li>
 </ul>`)
 		return
 	} else if path == "/admin/health" {
@@ -120,6 +121,8 @@ This is <a href="https://github.com/folio-org/mod-reporting">mod-reporting</a>. 
 		runWithErrorHandling(w, req, server, handleVersion)
 	} else if path == "/ldp/db/updates" {
 		runWithErrorHandling(w, req, server, handleUpdates)
+	} else if path == "/ldp/db/processes" {
+		runWithErrorHandling(w, req, server, handleProcesses)
 	} else {
 		// Unrecognized
 		w.WriteHeader(http.StatusNotFound)

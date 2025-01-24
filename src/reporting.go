@@ -437,6 +437,41 @@ func handleUpdates(w http.ResponseWriter, req *http.Request, session *ModReporti
 	return sendJSON(w, updates, "updates")
 }
 
+
+
+
+type dbProcesses struct {
+	DBName   string `db:"dbname" json:"databaseName"`
+	UserName string `db:"username" json:"userName"`
+	State    string `db:"state" json:"state"`
+	RealTime string `db:"realtime" json:"realTime"`
+	Query    string `db:"query" json:"query"`
+}
+
+func handleProcesses(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
+	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
+	if err != nil {
+		return fmt.Errorf("could not find reporting DB: %w", err)
+	}
+
+	rows, err := dbConn.Query(context.Background(), "SELECT dbname, username, state, realtime, query FROM ps() ORDER BY realtime DESC")
+	if err != nil {
+		return fmt.Errorf("could not fetch processes from reporting DB: %w", err)
+	}
+	defer rows.Close()
+
+	processes, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbProcesses])
+	if err != nil {
+		return fmt.Errorf("could not gather rows of processes from reporting DB: %w", err)
+	}
+
+	return sendJSON(w, processes, "processes")
+}
+
+
+
+
+
 func validateUrl(_url string) error {
 	// We could sanitize the URL, rejecting requests using unauthorized sources: see issue #36
 	return nil
