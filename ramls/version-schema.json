@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "A set of Metadb version and configuration information",
+  "type": "object",
+  "properties": {
+    "rawVersion": {
+      "type": "string",
+      "description": "The version string exactly as returned from Metadb"
+    },
+    "version": {
+      "type": "string",
+      "description": "The version number parsed out of the raw version string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "rawVersion",
+    "version"
+  ]
+}

@@ -378,6 +378,93 @@ func handleLogs(w http.ResponseWriter, req *http.Request, session *ModReportingS
 	return sendJSON(w, logs, "logs")
 }
 
+type dbVersion struct {
+	RawVersion string `db:"mdbversion"`
+}
+
+type dbVersionForJson struct {
+	RawVersion string `json:"rawVersion"`
+	Version    string `json:"version"`
+}
+
+func handleVersion(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
+	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
+	if err != nil {
+		return fmt.Errorf("could not find reporting DB: %w", err)
+	}
+
+	rows, err := dbConn.Query(context.Background(), "SELECT mdbversion()")
+	if err != nil {
+		return fmt.Errorf("could not fetch version from reporting DB: %w", err)
+	}
+	defer rows.Close()
+
+	versions, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbVersion])
+	if err != nil {
+		return fmt.Errorf("could not gather rows of version from reporting DB: %w", err)
+	}
+
+	row := versions[0]
+	jsonRow := dbVersionForJson{row.RawVersion, ""}
+	jsonRow.Version = strings.Replace(row.RawVersion, "Metadb v", "", 1)
+	return sendJSON(w, jsonRow, "version")
+}
+
+type dbUpdate struct {
+	TableSchema     string    `db:"schema_name" json:"tableSchema"`
+	TableName       string    `db:"table_name" json:"tableName"`
+	LastUpdate      time.Time `db:"last_update" json:"lastUpdate"`
+	ElapsedRealTime float32   `db:"elapsed_real_time" json:"elapsedRealTime"`
+}
+
+func handleUpdates(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
+	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
+	if err != nil {
+		return fmt.Errorf("could not find reporting DB: %w", err)
+	}
+
+	rows, err := dbConn.Query(context.Background(), "SELECT schema_name, table_name, last_update, elapsed_real_time FROM metadb.table_update ORDER BY elapsed_real_time DESC")
+	if err != nil {
+		return fmt.Errorf("could not fetch updates from reporting DB: %w", err)
+	}
+	defer rows.Close()
+
+	updates, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbUpdate])
+	if err != nil {
+		return fmt.Errorf("could not gather rows of updates from reporting DB: %w", err)
+	}
+
+	return sendJSON(w, updates, "updates")
+}
+
+type dbProcesses struct {
+	DBName   string `db:"dbname" json:"databaseName"`
+	UserName string `db:"username" json:"userName"`
+	State    string `db:"state" json:"state"`
+	RealTime string `db:"realtime" json:"realTime"`
+	Query    string `db:"query" json:"query"`
+}
+
+func handleProcesses(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
+	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
+	if err != nil {
+		return fmt.Errorf("could not find reporting DB: %w", err)
+	}
+
+	rows, err := dbConn.Query(context.Background(), "SELECT dbname, username, state, realtime, query FROM ps() ORDER BY realtime DESC")
+	if err != nil {
+		return fmt.Errorf("could not fetch processes from reporting DB: %w", err)
+	}
+	defer rows.Close()
+
+	processes, err := pgx.CollectRows(rows, pgx.RowToStructByName[dbProcesses])
+	if err != nil {
+		return fmt.Errorf("could not gather rows of processes from reporting DB: %w", err)
+	}
+
+	return sendJSON(w, processes, "processes")
+}
+
 func validateUrl(_url string) error {
 	// We could sanitize the URL, rejecting requests using unauthorized sources: see issue #36
 	return nil

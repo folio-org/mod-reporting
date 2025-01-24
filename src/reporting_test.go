@@ -140,6 +140,24 @@ func Test_reportingHandlers(t *testing.T) {
 			errorstr:      "failed to connect",
 		},
 		{
+			name:          "bad DB connection for version",
+			useBadSession: true,
+			function:      handleVersion,
+			errorstr:      "failed to connect",
+		},
+		{
+			name:          "bad DB connection for updates",
+			useBadSession: true,
+			function:      handleUpdates,
+			errorstr:      "failed to connect",
+		},
+		{
+			name:          "bad DB connection for processes",
+			useBadSession: true,
+			function:      handleProcesses,
+			errorstr:      "failed to connect",
+		},
+		{
 			name: "retrieve list of tables",
 			path: "/ldp/db/tables",
 			establishMock: func(data interface{}) error {
@@ -330,6 +348,33 @@ func Test_reportingHandlers(t *testing.T) {
 			},
 			function: handleLogs,
 			expected: `\[{"log_time":"2023-10-04T23:38:57.662\+01:00","error_severity":"INFO","message":"starting Metadb v1.2.0-beta7"}.*exist"}\]`,
+		},
+		{
+			name: "retrieve version",
+			path: "/ldp/db/version",
+			establishMock: func(data interface{}) error {
+				return establishMockForVersion(data.(pgxmock.PgxPoolIface))
+			},
+			function: handleVersion,
+			expected: `{"rawVersion":"Metadb v1.2.7","version":"1.2.7"}`,
+		},
+		{
+			name: "retrieve updates",
+			path: "/ldp/db/updates",
+			establishMock: func(data interface{}) error {
+				return establishMockForUpdates(data.(pgxmock.PgxPoolIface))
+			},
+			function: handleUpdates,
+			expected: `\[{"tableSchema":"folio_derived","tableName":"agreements_package_content_item","lastUpdate":"2025-01-24T00:59:48.421Z","elapsedRealTime":0.0452}\]`,
+		},
+		{
+			name: "retrieve processes",
+			path: "/ldp/db/processes",
+			establishMock: func(data interface{}) error {
+				return establishMockForProcesses(data.(pgxmock.PgxPoolIface))
+			},
+			function: handleProcesses,
+			expected: `\[{"databaseName":"metadb_indexdata_test","userName":"folio_app","state":"active","realTime":"00:00:04","query":"select a.message, b.message from metadb.log as a, metadb.log as b;"}\]`,
 		},
 	}
 
