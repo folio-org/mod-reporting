@@ -132,6 +132,33 @@ func runTests(t *testing.T, baseUrl string, session *ModReportingSession) {
 			status:   200,
 			expected: `\[{"log_time":"2023-10-04T23:38:57.662\+01:00","error_severity":"INFO","message":"starting Metadb v1.2.0-beta7"}.*exist"}\]`,
 		},
+		{
+			name: "fetch version",
+			path: "ldp/db/version",
+			establishMock: func(data interface{}) error {
+				return establishMockForVersion(data.(pgxmock.PgxPoolIface))
+			},
+			status:   200,
+			expected: `{"rawVersion":"Metadb v1.2.7","version":"1.2.7"}`,
+		},
+		{
+			name: "fetch updates",
+			path: "ldp/db/updates",
+			establishMock: func(data interface{}) error {
+				return establishMockForUpdates(data.(pgxmock.PgxPoolIface))
+			},
+			status:   200,
+			expected: `\[{"tableSchema":"folio_derived","tableName":"agreements_package_content_item","lastUpdate":"2025-01-24T00:59:48.421Z","elapsedRealTime":0.0452}\]`,
+		},
+		{
+			name: "fetch processes",
+			path: "ldp/db/processes",
+			establishMock: func(data interface{}) error {
+				return establishMockForProcesses(data.(pgxmock.PgxPoolIface))
+			},
+			status:   200,
+			expected: `\[{"databaseName":"metadb_indexdata_test","userName":"folio_app","state":"active","realTime":"00:00:04","query":"select a.message, b.message from metadb.log as a, metadb.log as b;"}\]`,
+		},
 	}
 
 	for _, d := range data {

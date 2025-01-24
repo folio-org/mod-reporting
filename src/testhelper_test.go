@@ -7,6 +7,13 @@ import "net/http"
 import "net/http/httptest"
 import "github.com/pashagolub/pgxmock/v3"
 
+func Must[T any](ret T, err error) T {
+    if err != nil {
+        panic(err)
+    }
+    return ret
+}
+
 // Various parts of this structure are used by different files' tests
 type testT struct {
 	name          string
@@ -191,5 +198,29 @@ func establishMockForLogs(mock pgxmock.PgxPoolIface) error {
 			AddRow(ts1, "INFO", "starting Metadb v1.2.0-beta7").
 			AddRow(ts2, "INFO", "source \"folio\" snapshot complete").
 			AddRow(ts3, "WARNING", "runsql: operator does not exist"))
+	return nil
+}
+
+func establishMockForVersion(mock pgxmock.PgxPoolIface) error {
+	mock.ExpectQuery(`SELECT mdbversion()`).
+		WillReturnRows(pgxmock.NewRows([]string{"mdbversion"}).
+			AddRow("Metadb v1.2.7"))
+	return nil
+}
+
+func establishMockForUpdates(mock pgxmock.PgxPoolIface) error {
+	ts1 := Must(time.Parse(time.RFC3339, "2025-01-24T00:59:48.421+00:00"))
+
+	mock.ExpectQuery(`SELECT schema_name, table_name, last_update, elapsed_real_time ` +
+		`FROM metadb.table_update ORDER BY elapsed_real_time DESC`).
+		WillReturnRows(pgxmock.NewRows([]string{"schema_name", "table_name", "last_update", "elapsed_real_time"}).
+			AddRow("folio_derived", "agreements_package_content_item", ts1, float32(0.0452)))
+	return nil
+}
+
+func establishMockForProcesses(mock pgxmock.PgxPoolIface) error {
+	mock.ExpectQuery(`SELECT dbname, username, state, realtime, query FROM ps\(\) ORDER BY realtime DESC`).
+		WillReturnRows(pgxmock.NewRows([]string{"dbname", "username", "state", "realtime", "query"}).
+			AddRow("metadb_indexdata_test", "folio_app", "active", "00:00:04", "select a.message, b.message from metadb.log as a, metadb.log as b;"))
 	return nil
 }
