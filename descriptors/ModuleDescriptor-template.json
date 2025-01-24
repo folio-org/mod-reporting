@@ -3,7 +3,7 @@
   "name" : "reporting module",
   "provides" : [ {
     "id" : "ldp-query",
-    "version" : "1.3",
+    "version" : "1.4",
     "handlers": [
       {
         "methods": [ "GET" ],
@@ -70,6 +70,21 @@
           "mod-settings.entries.collection.get",
           "mod-settings.global.read.ui-ldp.admin"
         ]
+      },
+      {
+        "methods" : [ "GET" ],
+        "pathPattern" : "/ldp/version",
+        "permissionsRequired" : [ "ldp.version.read"]
+      },
+      {
+        "methods" : [ "GET" ],
+        "pathPattern" : "/ldp/updates",
+        "permissionsRequired" : [ "ldp.updates.read"]
+      },
+      {
+        "methods" : [ "GET" ],
+        "pathPattern" : "/ldp/processes",
+        "permissionsRequired" : [ "ldp.processes.read"]
       }
     ]
   } ],
@@ -128,13 +143,31 @@
       "permissionName" : "ldp.config.edit"
     },
     {
+      "description" : "Obtain the version of Metadb the module is connected to",
+      "displayName" : "LDP -- Read version",
+      "permissionName" : "ldp.version.read"
+    },
+    {
+      "description" : "Obtain information about last-updated times of data tables",
+      "displayName" : "LDP -- Read updates",
+      "permissionName" : "ldp.updates.read"
+    },
+    {
+      "description" : "Obtain information about long-running search processes",
+      "displayName" : "LDP -- Read processes",
+      "permissionName" : "ldp.processes.read"
+    },
+    {
       "description" : "All LDP permissions",
       "displayName" : "LDP -- All",
       "permissionName" : "ldp.all",
       "subPermissions" : [
         "ldp.read",
         "ldp.config.read",
-        "ldp.config.edit"
+        "ldp.config.edit",
+        "ldp.version.read",
+        "ldp.updates.read",
+        "ldp.processes.read"
       ]
     }
   ],
