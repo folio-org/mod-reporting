@@ -8,10 +8,10 @@ import "net/http/httptest"
 import "github.com/pashagolub/pgxmock/v3"
 
 func Must[T any](ret T, err error) T {
-    if err != nil {
-        panic(err)
-    }
-    return ret
+	if err != nil {
+		panic(err)
+	}
+	return ret
 }
 
 // Various parts of this structure are used by different files' tests

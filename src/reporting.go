@@ -384,7 +384,7 @@ type dbVersion struct {
 
 type dbVersionForJson struct {
 	RawVersion string `json:"rawVersion"`
-	Version string `json:"version"`
+	Version    string `json:"version"`
 }
 
 func handleVersion(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
@@ -437,9 +437,6 @@ func handleUpdates(w http.ResponseWriter, req *http.Request, session *ModReporti
 	return sendJSON(w, updates, "updates")
 }
 
-
-
-
 type dbProcesses struct {
 	DBName   string `db:"dbname" json:"databaseName"`
 	UserName string `db:"username" json:"userName"`
@@ -467,10 +464,6 @@ func handleProcesses(w http.ResponseWriter, req *http.Request, session *ModRepor
 
 	return sendJSON(w, processes, "processes")
 }
-
-
-
-
 
 func validateUrl(_url string) error {
 	// We could sanitize the URL, rejecting requests using unauthorized sources: see issue #36
