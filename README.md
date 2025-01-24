@@ -28,7 +28,9 @@ This software is distributed under the terms of the Apache License, Version 2.0.
 
 `mod-reporting` is a FOLIO module that mediates access to reporting databases -- instances of either MetaDB or LDP Classic. It removes the need to deal directly with a relational database by providing a simple WSAPI that can be used by UI code such as [ui-ldp](https://github.com/folio-org/ui-ldp).
 
-`mod-reporting` is a plug-compatible replacement for [`mod-ldp`](https://github.com/folio-org/mod-ldp), using the same API specification ([FOLIO module descriptor](descriptors/ModuleDescriptor-template.json), [RAML file](ramls/ldp.raml) and associated JSON Schemas and examples). It provides the same interface (`ldp-query`) with the same semantics. As well as the machine-readable API specification, [a human-readable overview](ramls/overview.md) is provided.
+`mod-reporting` started out as a plug-compatible replacement for [`mod-ldp`](https://github.com/folio-org/mod-ldp), using the same API specification ([FOLIO module descriptor](descriptors/ModuleDescriptor-template.json), [RAML file](ramls/ldp.raml) and associated JSON Schemas and examples). It provides the same interface (`ldp-query`) with the same semantics. In more recent releases, it adds new endpoints that were never supported by mod-ldp, but remains strictly backwards compatible.
+
+As well as the machine-readable API specification, [a human-readable overview](ramls/overview.md) is provided.
 
 **Personal data.**
 This module does not store any personal data. See the file [`PERSONAL_DATA_DISCLOSURE.md`](PERSONAL_DATA_DISCLOSURE.md) for details.
@@ -46,8 +48,9 @@ Compilation is controlled by a good old-fashioned [`Makefile`](Makefile)
 * `make target/ModuleDescriptor.json` to compile the module descriptor
 * `make target/mod-reporting` to build to module
 * `make test` to run tests
+* `make lint` to audit code quality and security
 
-Invocation takes a single argument, the name of a configuration file (see [below](#configuration-file)).
+Invocation takes a single argument, the name of a configuration file (see [below](#configuration-file)). Its behaviour can also be affected by environment variables (see [below](#folio-services-and-reporting-databases)).
 
 Containerization is supported:
 * `docker build -t mod-reporting .` to create a container
@@ -103,9 +106,9 @@ Access to the FOLIO database is performed using [the foliogo client library](htt
 
 ### FOLIO services and reporting databases
 
-In normal operation, each incoming request is serviced by reference to the Okapi instance that sent it. For development, however, it's possible to override this behaviour and have every outgoing request go to a nominated Okapi instance. This is specified by the environment variables `OKAPI_URL` (e.g https://folio-snapshot-okapi.dev.folio.org) and `OKAPI_TENANT` (e.g. `diku`). Authentication onto this instance is done using the values specifid by the environment variables `OKAPI_USER` and `OKAPI_PW`.
+In normal operation, each incoming request is serviced by reference to the Okapi instance that sent it. For development, however, it's possible to override this behaviour and have every outgoing request go to a nominated Okapi instance. This is specified by the environment variables `OKAPI_URL` (e.g https://folio-snapshot-okapi.dev.folio.org) and `OKAPI_TENANT` (e.g. `diku`). When using an Okapi servive specified in this way, authentication onto this instance is done using the values specifid by the environment variables `OKAPI_USER` and `OKAPI_PW`.
 
-Similarly, in normal operation mod-reporting determines which underlying reporting database to connect to on the basis of the information configured in the mod-settings record with scope `ui-ldp.config` and key `dbinfo`, as managed by the "Database configuration" settings page of the Reporting app. However, these configured settings can be overridden if mod-reporting is run with all three of the following environment variables set:
+Similarly, in normal operation, mod-reporting determines which underlying reporting database to connect to on the basis of the information configured in FOLIO -- specifically, in the mod-settings record with scope `ui-ldp.config` and key `dbinfo`, as managed by the "Database configuration" settings page of the Reporting app. However, these configured settings can be overridden if mod-reporting is run with all three of the following environment variables set:
 
 * `REPORTING_DB_URL` -- The full URL of the PostgreSQL database to connect to, e.g. `postgres://localhost:5432/metadb`
 * `REPORTING_DB_USER` -- The name of the PostgreSQL user to act as when accessing this database
@@ -132,7 +135,7 @@ If running `mod-reporting` locally, you will likely run into CORS problems with 
 * [The `ldp-config-tool` utility](config-tool)
 * The old [`mod-ldp`](https://github.com/folio-org/mod-ldp) for which this is a replacement
 * FOLIO's Reporting app, [`ui-ldp`](https://github.com/folio-org/ui-ldp), which uses this module
-* [In-progress Module Acceptance assessment](doc/MODULE_EVALUATION_TEMPLATE.MD)
+* [The FOLIO Module Acceptance assessment](doc/MODULE_EVALUATION_TEMPLATE.MD)
 
 ## Additional information
 
