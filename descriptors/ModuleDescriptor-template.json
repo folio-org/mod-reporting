@@ -73,17 +73,17 @@
       },
       {
         "methods" : [ "GET" ],
-        "pathPattern" : "/ldp/version",
+        "pathPattern" : "/ldp/db/version",
         "permissionsRequired" : [ "ldp.version.read"]
       },
       {
         "methods" : [ "GET" ],
-        "pathPattern" : "/ldp/updates",
+        "pathPattern" : "/ldp/db/updates",
         "permissionsRequired" : [ "ldp.updates.read"]
       },
       {
         "methods" : [ "GET" ],
-        "pathPattern" : "/ldp/processes",
+        "pathPattern" : "/ldp/db/processes",
         "permissionsRequired" : [ "ldp.processes.read"]
       }
     ]
