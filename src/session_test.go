@@ -14,19 +14,19 @@ func Test_session(t *testing.T) {
 	badUrl := "http://made.up.hostname.abc123:9000"
 
 	t.Run("bad URL/tenant combo", func(t *testing.T) {
-		session, err := NewModReportingSession(server, "", "diku")
+		session, err := NewModReportingSession(server, "", "diku", "dummyToken")
 		assert.Nil(t, session)
 		assert.ErrorContains(t, err, "no URL provided with tenant")
 	})
 
 	t.Run("resume Okapi session", func(t *testing.T) {
-		session, err := NewModReportingSession(server, badUrl, "")
+		session, err := NewModReportingSession(server, badUrl, "", "dummyToken")
 		assert.Nil(t, err)
 		assert.Equal(t, badUrl, session.url)
 	})
 
 	t.Run("session for command-line without env", func(t *testing.T) {
-		session, err := NewModReportingSession(server, "", "")
+		session, err := NewModReportingSession(server, "", "", "dummyToken")
 		assert.Nil(t, session)
 		assert.ErrorContains(t, err, "missing environment variables")
 	})
@@ -36,7 +36,7 @@ func Test_session(t *testing.T) {
 		os.Setenv("OKAPI_TENANT", "diku")
 		os.Setenv("OKAPI_USER", "mike")
 		os.Setenv("OKAPI_PW", "swordfish")
-		session, err := NewModReportingSession(server, "", "")
+		session, err := NewModReportingSession(server, "", "", "dummyToken")
 		assert.Nil(t, session)
 		assert.ErrorContains(t, err, "no such host")
 	})
@@ -46,7 +46,7 @@ func Test_session(t *testing.T) {
 		os.Setenv("OKAPI_TENANT", "diku")
 		os.Setenv("OKAPI_USER", "mike")
 		os.Setenv("OKAPI_PW", "swordfish")
-		session, err := NewModReportingSession(server, "", "")
+		session, err := NewModReportingSession(server, "", "", "dummyToken")
 		assert.Nil(t, err)
 		return session
 	}

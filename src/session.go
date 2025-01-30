@@ -20,6 +20,7 @@ type ModReportingSession struct {
 	server       *ModReportingServer // back-reference
 	url          string
 	tenant       string
+	token        string
 	folioSession foliogo.Session
 	dbConn       PgxIface
 	isMDB        bool
@@ -28,13 +29,13 @@ type ModReportingSession struct {
 /*
  * There are two valid cases:
  * 1. The url and tenant parameters are defined: we have received a request from Okapi, and the new FOLIO session should be pointed to the specified URL+tenant
- * 2. The url and tenant parameters are not defined: we have a request directly from a browser, curl command or similar, and need ot make a default FOLIO session (which will use environment variables such as OKAPI_URL)
+ * 2. The url and tenant parameters are not defined: we have a request directly from a browser, curl command or similar, and need to make a default FOLIO session (which will use environment variables such as OKAPI_URL)
  *
  * There is also one common INvalid case:
- * 3. The url parameter is not defined but the tenant parameter is. This arises when running a curl command copied from a browser session, as the url parameter is added only by Okapi. We explicitly catch this are reject it.
+ * 3. The url parameter is not defined but the tenant parameter is. This arises when running a curl command copied from a browser session, as the url parameter is added only by Okapi. We explicitly catch this and reject it.
  */
 
-func NewModReportingSession(server *ModReportingServer, url string, tenant string) (*ModReportingSession, error) {
+func NewModReportingSession(server *ModReportingServer, url string, tenant string, token string) (*ModReportingSession, error) {
 	if url == "" && tenant != "" {
 		return nil, fmt.Errorf("no URL provided with tenant: responding to a request with no X-Okapi-Url header?")
 	}
@@ -43,6 +44,7 @@ func NewModReportingSession(server *ModReportingServer, url string, tenant strin
 		server: server,
 		url:    url,
 		tenant: tenant,
+		token:  token,
 	}
 
 	if url != "" {

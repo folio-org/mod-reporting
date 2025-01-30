@@ -62,14 +62,14 @@ func (server *ModReportingServer) launch() error {
 }
 
 // We maintain a map of tenant:url to session
-func (server *ModReportingServer) findSession(url string, tenant string) (*ModReportingSession, error) {
-	key := tenant + ":" + url
+func (server *ModReportingServer) findSession(url string, tenant string, token string) (*ModReportingSession, error) {
+	key := tenant + ":" + url + ":" + token
 	session := server.sessions[key]
 	if session != nil {
 		return session, nil
 	}
 
-	session, err := NewModReportingSession(server, url, tenant)
+	session, err := NewModReportingSession(server, url, tenant, token)
 	if err != nil {
 		return nil, fmt.Errorf("could not create session for key '%s': %w", key, err)
 	}
@@ -133,7 +133,8 @@ This is <a href="https://github.com/folio-org/mod-reporting">mod-reporting</a>. 
 func runWithErrorHandling(w http.ResponseWriter, req *http.Request, server *ModReportingServer, f handlerFn) {
 	host := req.Header.Get("X-Okapi-Url")
 	tenant := req.Header.Get("X-Okapi-Tenant")
-	session, err := server.findSession(host, tenant)
+	token := req.Header.Get("X-Okapi-Token")
+	session, err := server.findSession(host, tenant, token)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "could not make session: %s\n", err)
