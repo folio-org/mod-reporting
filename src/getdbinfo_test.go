@@ -10,7 +10,7 @@ func Test_getDbInfo(t *testing.T) {
 	baseUrl := ts.URL
 
 	server := MakeModReportingServer(nil, nil, "")
-	session, err := NewModReportingSession(server, baseUrl, "dummyTenant")
+	session, err := NewModReportingSession(server, baseUrl, "dummyTenant", "dummyToken")
 	assert.Nil(t, err)
 
 	t.Run("info from environment", func(t *testing.T) {

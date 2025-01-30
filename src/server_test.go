@@ -16,9 +16,9 @@ func Test_server(t *testing.T) {
 	defer ts.Close()
 	server, err := MakeConfiguredServer("../etc/silent.json", "..")
 	assert.Nil(t, err)
-	session, err := NewModReportingSession(server, ts.URL, "t1")
+	session, err := NewModReportingSession(server, ts.URL, "t1", "dummyToken")
 	assert.Nil(t, err)
-	server.sessions[":"+ts.URL] = session
+	server.sessions[":"+ts.URL+":"] = session
 
 	go func() {
 		err = server.launch()

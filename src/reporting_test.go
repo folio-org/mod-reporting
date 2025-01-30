@@ -380,7 +380,7 @@ func Test_reportingHandlers(t *testing.T) {
 
 	mrs, err := MakeConfiguredServer("../etc/silent.json", ".")
 	assert.Nil(t, err)
-	session, err := NewModReportingSession(mrs, baseUrl, "dummyTenant")
+	session, err := NewModReportingSession(mrs, baseUrl, "dummyTenant", "dummyToken")
 	assert.Nil(t, err)
 
 	for _, test := range tests {
