@@ -359,6 +359,10 @@ type dbLogEntry struct {
 }
 
 func handleLogs(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
+	if !session.isMDB {
+		return &HTTPError{ http.StatusNotImplemented, "Implemented only for MetaDB, not LDP" }
+	}
+
 	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
 	if err != nil {
 		return fmt.Errorf("could not find reporting DB: %w", err)
@@ -388,6 +392,10 @@ type dbVersionForJson struct {
 }
 
 func handleVersion(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
+	if !session.isMDB {
+		return &HTTPError{ http.StatusNotImplemented, "Implemented only for MetaDB, not LDP" }
+	}
+
 	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
 	if err != nil {
 		return fmt.Errorf("could not find reporting DB: %w", err)
@@ -418,6 +426,10 @@ type dbUpdate struct {
 }
 
 func handleUpdates(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
+	if !session.isMDB {
+		return &HTTPError{ http.StatusNotImplemented, "Implemented only for MetaDB, not LDP" }
+	}
+
 	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
 	if err != nil {
 		return fmt.Errorf("could not find reporting DB: %w", err)
@@ -446,6 +458,10 @@ type dbProcesses struct {
 }
 
 func handleProcesses(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
+	if !session.isMDB {
+		return &HTTPError{ http.StatusNotImplemented, "Implemented only for MetaDB, not LDP" }
+	}
+
 	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
 	if err != nil {
 		return fmt.Errorf("could not find reporting DB: %w", err)

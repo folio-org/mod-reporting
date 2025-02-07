@@ -6,6 +6,15 @@ import "time"
 import "strings"
 import "github.com/MikeTaylor/catlogger"
 
+type HTTPError struct {
+	status  int
+	message string
+}
+
+func (m *HTTPError) Error() string {
+	return m.message
+}
+
 type handlerFn func(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error
 
 type ModReportingServer struct {
@@ -144,7 +153,14 @@ func runWithErrorHandling(w http.ResponseWriter, req *http.Request, server *ModR
 
 	err = f(w, req, session)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		var status int
+		switch e := err.(type) {
+		case *HTTPError:
+			status = e.status
+		default:
+			status = http.StatusInternalServerError
+		}
+		w.WriteHeader(status)
 		fmt.Fprintln(w, err.Error())
 		session.Log("error", fmt.Sprintf("%s: %s", req.RequestURI, err.Error()))
 	}
