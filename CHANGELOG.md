@@ -7,6 +7,7 @@
 * Add three new WSAPI endpoints (`/ldp/db/version`, `/ldp/db/updates`, `/ldp/db/processes`), write tests, update documentation. Provided interface `ldp-query` bumped from v1.3 to v1.4. Fixes MODREP-2.
 * Each new FOLIO session gets a new reporting-database connection, causing the current DB config to be re-read. Fixes MODREP-11.
 * Metadb-only features fail more politely (HTTP status 501) when run against LDP Classic. Fixes MODREP-17.
+* When fetching `/ldp/config/dbinfo`, the reporting-database password is replaced by `********`. Fixes MODREP-18.
 
 ## [1.2.0](https://github.com/folio-org/mod-reporting/tree/v1.2.0) (2024-10-29)
 

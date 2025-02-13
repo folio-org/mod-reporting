@@ -51,6 +51,27 @@ func fetchWithToken0(req *http.Request, folioSession foliogo.Session, path strin
 	return fetchWithToken(req, folioSession, path, foliogo.RequestParams{})
 }
 
+// This type is used only by the censorPassword function
+type configItemDbinfo struct {
+	User string `json:"user"`
+	Url  string `json:"url"`
+	Pass string `json:"pass"`
+}
+
+func censorPassword(value string) (string, error) {
+	var cid configItemDbinfo
+	err := json.Unmarshal([]byte(value), &cid)
+	if err != nil {
+		return "", nil
+	}
+	cid.Pass = "********"
+	bytes, err := json.Marshal(cid)
+	if err != nil {
+		return "", nil
+	}
+	return string(bytes), err
+}
+
 func settingsItemToConfigItem(item settingsItemGeneral, tenant string) (configItem, error) {
 	value, ok := item.Value.(string)
 	if !ok {
@@ -65,6 +86,13 @@ func settingsItemToConfigItem(item settingsItemGeneral, tenant string) (configIt
 		Key:    item.Key,
 		Value:  value,
 		Tenant: tenant,
+	}
+	if item.Scope == "ui-ldp.admin" && item.Key == "dbinfo" {
+		newValue, err := censorPassword(ci.Value)
+		if err != nil {
+			return configItem{}, fmt.Errorf("could not censor password: %w", err)
+		}
+		ci.Value = newValue
 	}
 	return ci, nil
 }

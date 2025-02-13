@@ -66,7 +66,7 @@ func runTests(t *testing.T, baseUrl string, session *ModReportingSession) {
 			name:     "get single config",
 			path:     "ldp/config/dbinfo",
 			status:   200,
-			expected: `{"key":"dbinfo","tenant":"t1","value":"{\\"pass\\":\\"pw\\",\\"url\\":\\"dummyUrl\\",\\"user\\":\\"fiona\\"}"}`,
+			expected: `{"key":"dbinfo","tenant":"t1","value":"{\\"user\\":\\"fiona\\",\\"url\\":\\"dummyUrl\\",\\"pass\\":\\"\*\*\*\*\*\*\*\*\\"}"}`,
 		},
 		{
 			name:     "create new config",
