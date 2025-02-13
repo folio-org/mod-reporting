@@ -1,6 +1,6 @@
 module github.com/folio-org/mod-reporting
 
-go 1.23.2
+go 1.23.6
 
 require (
 	github.com/MikeTaylor/catlogger v0.0.2
