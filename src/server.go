@@ -99,6 +99,7 @@ This is <a href="https://github.com/folio-org/mod-reporting">mod-reporting</a>. 
   <li><a href="/admin/health">Health check</a></li>
   <li><a href="/htdocs/">Static area</a></li>
   <li><a href="/ldp/config">Legacy configuration WSAPI</a></li>
+  <li><a href="/ldp/config/dbinfo">Legacy configuration 'dbinfo'</a></li>
   <li><a href="/ldp/db/tables">List tables from reporting database</a></li>
   <li><a href="/ldp/db/columns?schema=folio_users&table=users">List columns for "users" table</a></li>
   <li><a href="/ldp/db/log">Logs</a></li>
