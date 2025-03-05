@@ -1,6 +1,6 @@
 # Change history for mod-reporting
 
-## [1.3.0](https://github.com/folio-org/mod-reporting/tree/v1.3.0) (IN PROGRESS)
+## [1.3.0](https://github.com/folio-org/mod-reporting/tree/v1.3.0) (2025-03-05)
 
 * Implement `/ldp/db/log`, add tests. This is in the module descriptor, so it's needed for full compatibility. Fixes MODREP-8.
 * Upgrade dependency on `crypto` library (v0.27.0 has a vulnerability). Fixes MODREP-16.
