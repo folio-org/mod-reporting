@@ -1,9 +1,11 @@
 package main
 
+import "os"
 import "fmt"
 import "net/http"
 import "time"
 import "strings"
+import "strconv"
 import "github.com/MikeTaylor/catlogger"
 
 type HTTPError struct {
@@ -62,7 +64,16 @@ func (server *ModReportingServer) Log(cat string, args ...string) {
 
 func (server *ModReportingServer) launch() error {
 	cfg := server.config
-	hostspec := cfg.Listen.Host + ":" + fmt.Sprint(cfg.Listen.Port)
+
+	var port int
+	serverPortString := os.Getenv("SERVER_PORT")
+	if serverPortString != "" {
+		port, _ = strconv.Atoi(serverPortString)
+	} else {
+		port = cfg.Listen.Port
+	}
+
+	hostspec := cfg.Listen.Host + ":" + fmt.Sprint(port)
 	server.server.Addr = hostspec
 	server.Log("listen", "listening on", hostspec)
 	err := server.server.ListenAndServe()
