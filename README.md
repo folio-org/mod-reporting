@@ -89,6 +89,8 @@ Two top-level stanzas are supported:
   * `host` is an IP address or DNS-resolvable hostname. `0.0.0.0` (all interfaces) should usually be used
   * `port` is an IP port number
 
+The specified port can be overridden at run-time by setting the `SERVER_PORT` environment variable. This is useful when invoking the service from a container whose contents (i.e. the configuration file) cannot easily be modified, but whose environment can be specified.
+
 
 ### Logging
 
