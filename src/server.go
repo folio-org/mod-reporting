@@ -6,6 +6,7 @@ import "net/http"
 import "time"
 import "strings"
 import "strconv"
+import "html"
 import "github.com/MikeTaylor/catlogger"
 
 type HTTPError struct {
@@ -158,7 +159,7 @@ func runWithErrorHandling(w http.ResponseWriter, req *http.Request, server *ModR
 	session, err := server.findSession(host, tenant, token)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "could not make session: %s\n", err)
+		fmt.Fprintf(w, "could not make session: %s\n", html.EscapeString(err.Error()))
 		server.Log("error", fmt.Sprintf("%s: %s", req.RequestURI, err.Error()))
 		return
 	}
@@ -173,7 +174,7 @@ func runWithErrorHandling(w http.ResponseWriter, req *http.Request, server *ModR
 			status = http.StatusInternalServerError
 		}
 		w.WriteHeader(status)
-		fmt.Fprintln(w, err.Error())
+		fmt.Fprintln(w, html.EscapeString(err.Error()))
 		session.Log("error", fmt.Sprintf("%s: %s", req.RequestURI, err.Error()))
 	}
 }
