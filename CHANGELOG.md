@@ -1,6 +1,6 @@
 # Change history for mod-reporting
 
-## [1.3.1](https://github.com/folio-org/mod-reporting/tree/v1.3.1) (IN PROGRESS)
+## [1.3.1](https://github.com/folio-org/mod-reporting/tree/v1.3.1) (2025-03-12)
 
 * Prevent unescape-HTML attack in `server.go` error responses. Fixes MODREP-23.
 
