@@ -1,5 +1,9 @@
 # Change history for mod-reporting
 
+## [1.3.1](https://github.com/folio-org/mod-reporting/tree/v1.3.1) (IN PROGRESS)
+
+* Prevent unescape-HTML attack in `server.go` error responses. Fixes MODREP-23.
+
 ## [1.3.0](https://github.com/folio-org/mod-reporting/tree/v1.3.0) (2025-03-05)
 
 * Implement `/ldp/db/log`, add tests. This is in the module descriptor, so it's needed for full compatibility. Fixes MODREP-8.
