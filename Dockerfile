@@ -1,20 +1,11 @@
 # Build with: docker build -t mod-reporting .
 # Run with: docker run -p 12369:12369 -e OKAPI_PW=[DIKU_ADMIN-PASSWORD] mod-reporting
 
-FROM golang:1.23
-
-ENV APP_DIR=/app
-
-# Create user/group 'folio'
-RUN addgroup folio && \
-    adduser --disabled-password --gecos "" --home ${APP_DIR} --ingroup folio folio && \
-    chown -R folio:folio ${APP_DIR}
-
-# Run as this user
-USER folio
+# also update the version in go.mod
+FROM golang:1.23-alpine AS build
 
 # Set destination for COPY
-WORKDIR ${APP_DIR}
+WORKDIR /app
 
 # Download Go modules
 COPY go.mod go.sum ./
@@ -24,7 +15,12 @@ RUN go mod download
 COPY src etc htdocs ./
 
 # Build
-RUN go build -o mod-reporting ./...
+RUN CGO_ENABLED=0 go build -o mod-reporting ./...
+
+# https://github.com/GoogleContainerTools/distroless/tree/main/base
+FROM gcr.io/distroless/base:nonroot
+
+COPY --from=build /app/mod-reporting /app/config.json ./
 
 EXPOSE 12369
 
@@ -42,4 +38,4 @@ ENV LOGCAT=listen,op,curl,status,response,db,path
 #ENV REPORTING_DB_USER=miketaylor
 #ENV REPORTING_DB_PASS=swordfish
 
-CMD ["./mod-reporting", "config.json"]
+ENTRYPOINT ["./mod-reporting", "config.json"]
