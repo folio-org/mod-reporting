@@ -38,4 +38,5 @@ ENV LOGCAT=listen,op,curl,status,response,db,path
 #ENV REPORTING_DB_USER=miketaylor
 #ENV REPORTING_DB_PASS=swordfish
 
-ENTRYPOINT ["./mod-reporting", "config.json"]
+ENTRYPOINT ["./mod-reporting"]
+CMD ["config.json"]
