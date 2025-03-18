@@ -1,5 +1,9 @@
 # Change history for mod-reporting
 
+## [1.3.2](https://github.com/folio-org/mod-reporting/tree/v1.3.2) (IN PROGRESS)
+
+* Smaller base images in Dockerfile. Fixes MODREP-24.
+
 ## [1.3.1](https://github.com/folio-org/mod-reporting/tree/v1.3.1) (2025-03-12)
 
 * Prevent unescape-HTML attack in `server.go` error responses. Fixes MODREP-23.
