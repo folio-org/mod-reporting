@@ -76,11 +76,15 @@ The configuration file is written in JSON. An example can be found in [`etc/conf
   "listen": {
     "host": "0.0.0.0",
     "port": 12369
-  }
+  },
+  "reportUrlWhitelist": [
+    "^https://gitlab.com/MikeTaylor/metadb-queries/",
+    "^https://raw.githubusercontent.com/metadb-project/"
+  ]
 }
 ```
 
-Two top-level stanzas are supported:
+Three top-level stanzas are supported:
 * `logging` specifies how the system's [categorical logger](https://github.com/MikeTaylor/catlogger) should be configured:
   * `categories` is a comma-separated list of logging categories for which output should be emitted: see [below](#logging)
   * `prefix` is an optional string which will be emitted at the start of each logging line. This can help to differentiate logging output from other outputs.
@@ -88,8 +92,9 @@ Two top-level stanzas are supported:
 * `listen` specifies where the running server should listen for connections:
   * `host` is an IP address or DNS-resolvable hostname. `0.0.0.0` (all interfaces) should usually be used
   * `port` is an IP port number
+* `reportUrlWhitelist` is an optional list of regular expressions. If this is specified, then only report URLs that match one of these regular expressions are accepted.
 
-The specified port can be overridden at run-time by setting the `SERVER_PORT` environment variable. This is useful when invoking the service from a container whose contents (i.e. the configuration file) cannot easily be modified, but whose environment can be specified.
+The port specified in the `listen` stanza can be overridden at run-time by setting the `SERVER_PORT` environment variable. This is useful when invoking the service from a container whose contents (i.e. the configuration file) cannot easily be modified, but whose environment can be specified.
 
 
 ### Logging
@@ -101,6 +106,7 @@ The following categories of logging information may be emitted, depending on how
 * `path` -- notes each path requested by a client
 * `db` -- emits information about each reporting database and notes when successful connections are made
 * `sql` -- logs the generated SQL for each JSON query submitted via the `/ldp/db/query` endpoint
+* `validate` -- logs checks of report URLs against the specified whitelist regular expressions
 * `error` -- emits error messages returned to the client in HTTP responses
 
 Access to the FOLIO database is performed using [the foliogo client library](https://github.com/indexdata/foliogo) which also uses categorical logger. See its documentation for information on the categories `service`, `session`, `op`, `auth`, `curl`, `status` and `response`.
