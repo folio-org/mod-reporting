@@ -341,10 +341,10 @@ func Test_reportingHandlers(t *testing.T) {
 			expected: `{"totalRecords":2,"records":\[{"id":"5a9a92ca-ba05-d72d-f84c-31921f1f7e4d","num":29},{"id":"456","num":3}\]}`,
 		},
 		{
-			name: "no match with whitelist",
+			name:         "no match with whitelist",
 			use2ndConfig: true,
-			path: "/ldp/db/reports",
-			sendData: `{ "url": "` + baseUrl + `/reports/loans.sql" }`,
+			path:         "/ldp/db/reports",
+			sendData:     `{ "url": "` + baseUrl + `/reports/loans.sql" }`,
 			establishMock: func(data interface{}) error {
 				return establishMockForReport(data.(pgxmock.PgxPoolIface))
 			},
@@ -352,10 +352,10 @@ func Test_reportingHandlers(t *testing.T) {
 			errorstr: "report URL did not match any whitelist regular expression",
 		},
 		{
-			name: "match with whitelist",
+			name:         "match with whitelist",
 			use2ndConfig: true,
-			path: "/ldp/db/reports",
-			sendData: `{ "url": "https://gitlab.com/MikeTaylor/metadb-queries/non/existent.sql" }`,
+			path:         "/ldp/db/reports",
+			sendData:     `{ "url": "https://gitlab.com/MikeTaylor/metadb-queries/non/existent.sql" }`,
 			establishMock: func(data interface{}) error {
 				return establishMockForReport(data.(pgxmock.PgxPoolIface))
 			},
@@ -429,11 +429,11 @@ func Test_reportingHandlers(t *testing.T) {
 				assert.Nil(t, err)
 			}
 
-			var session *ModReportingSession;
-			if (!test.use2ndConfig) {
-				session = session1;
+			var session *ModReportingSession
+			if !test.use2ndConfig {
+				session = session1
 			} else {
-				session = session2;
+				session = session2
 			}
 
 			if test.useBadSession {
