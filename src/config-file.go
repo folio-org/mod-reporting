@@ -15,9 +15,12 @@ type listenConfig struct {
 	Port int    `json:"port"`
 }
 
+type reportUrlWhitelistConfig []string
+
 type config struct {
-	Logging loggingConfig `json:"logging"`
-	Listen  listenConfig  `json:"listen"`
+	Logging            loggingConfig            `json:"logging"`
+	Listen             listenConfig             `json:"listen"`
+	ReportUrlWhitelist reportUrlWhitelistConfig `json:"reportUrlWhitelist"`
 }
 
 func readConfig(name string) (*config, error) {

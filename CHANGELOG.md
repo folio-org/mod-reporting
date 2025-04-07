@@ -3,6 +3,7 @@
 ## [1.3.2](https://github.com/folio-org/mod-reporting/tree/v1.3.2) (IN PROGRESS)
 
 * Smaller base images in Dockerfile. Fixes MODREP-24.
+* Support validation of report URLs by reference to a whitelist of regexps in the configuration file. Fixes MODREP-4.
 
 ## [1.3.1](https://github.com/folio-org/mod-reporting/tree/v1.3.1) (2025-03-12)
 
