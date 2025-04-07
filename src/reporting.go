@@ -285,7 +285,7 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 		return fmt.Errorf("could not deserialize JSON from body: %w", err)
 	}
 
-	err = validateUrl(query.Url)
+	err = validateUrl(session, query.Url)
 	if err != nil {
 		return fmt.Errorf("query may not be loaded from %s: %w", query.Url, err)
 	}
@@ -481,9 +481,28 @@ func handleProcesses(w http.ResponseWriter, req *http.Request, session *ModRepor
 	return sendJSON(w, processes, "processes")
 }
 
-func validateUrl(_url string) error {
-	// We could sanitize the URL, rejecting requests using unauthorized sources: see issue #36
-	return nil
+func validateUrl(session *ModReportingSession, url string) error {
+	ruwl := session.server.config.ReportUrlWhitelist
+	if len(ruwl) == 0 {
+		session.Log("validate", fmt.Sprintf("report URL %s validated: no whitelist regexps configured", url))
+		return nil
+	}
+
+	for _, s := range ruwl {
+		re, err := regexp.Compile(s)
+		if err != nil {
+			return fmt.Errorf("could not compile whitelist regular expression %s", s)
+		}
+		if re.MatchString(url) {
+			// One match is good enough
+			session.Log("validate", fmt.Sprintf("report URL %s matched whitelist regexp %s", url, s))
+			return nil
+		} else {
+			session.Log("validate", fmt.Sprintf("report URL %s did not match whitelist regexp %s", url, s))
+		}
+	}
+
+	return fmt.Errorf("report URL did not match any whitelist regular expression")
 }
 
 func makeFunctionCall(sql string, params map[string]string, limit int) (string, []any, error) {
