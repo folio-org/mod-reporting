@@ -26,6 +26,7 @@ type testT struct {
 	expectedArgs  []string // Used only in reporting_test.go/Test_makeSql
 	errorstr      string
 	useBadSession bool
+	use2ndConfig  bool
 }
 
 // Dummy HTTP server used by multiple tests

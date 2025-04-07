@@ -341,6 +341,28 @@ func Test_reportingHandlers(t *testing.T) {
 			expected: `{"totalRecords":2,"records":\[{"id":"5a9a92ca-ba05-d72d-f84c-31921f1f7e4d","num":29},{"id":"456","num":3}\]}`,
 		},
 		{
+			name: "no match with whitelist",
+			use2ndConfig: true,
+			path: "/ldp/db/reports",
+			sendData: `{ "url": "` + baseUrl + `/reports/loans.sql" }`,
+			establishMock: func(data interface{}) error {
+				return establishMockForReport(data.(pgxmock.PgxPoolIface))
+			},
+			function: handleReport,
+			errorstr: "report URL did not match any whitelist regular expression",
+		},
+		{
+			name: "match with whitelist",
+			use2ndConfig: true,
+			path: "/ldp/db/reports",
+			sendData: `{ "url": "https://gitlab.com/MikeTaylor/metadb-queries/non/existent.sql" }`,
+			establishMock: func(data interface{}) error {
+				return establishMockForReport(data.(pgxmock.PgxPoolIface))
+			},
+			function: handleReport,
+			errorstr: "could not fetch report",
+		},
+		{
 			name: "retrieve logs",
 			path: "/ldp/db/logs",
 			establishMock: func(data interface{}) error {
@@ -378,9 +400,14 @@ func Test_reportingHandlers(t *testing.T) {
 		},
 	}
 
-	mrs, err := MakeConfiguredServer("../etc/silent.json", ".")
+	mrs1, err := MakeConfiguredServer("../etc/silent.json", ".")
 	assert.Nil(t, err)
-	session, err := NewModReportingSession(mrs, baseUrl, "dummyTenant", "dummyToken")
+	session1, err := NewModReportingSession(mrs1, baseUrl, "dummyTenant", "dummyToken")
+	assert.Nil(t, err)
+
+	mrs2, err := MakeConfiguredServer("../etc/silent-with-whitelist.json", ".")
+	assert.Nil(t, err)
+	session2, err := NewModReportingSession(mrs2, baseUrl, "dummyTenant", "dummyToken")
 	assert.Nil(t, err)
 
 	for _, test := range tests {
@@ -400,6 +427,13 @@ func Test_reportingHandlers(t *testing.T) {
 			if test.establishMock != nil {
 				err = test.establishMock(mock)
 				assert.Nil(t, err)
+			}
+
+			var session *ModReportingSession;
+			if (!test.use2ndConfig) {
+				session = session1;
+			} else {
+				session = session2;
 			}
 
 			if test.useBadSession {
