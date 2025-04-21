@@ -101,7 +101,7 @@ func (server *ModReportingServer) findSession(url string, tenant string, token s
 
 func handler(w http.ResponseWriter, req *http.Request, server *ModReportingServer) {
 	path := req.URL.Path
-	server.Log("path", path)
+	server.Log("path", req.Method, path)
 
 	if path == "/" {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -118,6 +118,27 @@ This is <a href="https://github.com/folio-org/mod-reporting">mod-reporting</a>. 
   <li><a href="/ldp/db/version">Version</a></li>
   <li><a href="/ldp/db/updates">Updates</a></li>
   <li><a href="/ldp/db/processes">Processes</a></li>
+<script>
+function enableTenant() {
+  fetch('http://localhost:12369/_/tenant', {
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json',
+      'Accept': '*/*'
+    },
+    body: JSON.stringify({
+      module_to: 'mod-reporting-1.3.0',
+      parameters: [
+	{ key: 'loadSample', value: 'true' }
+      ]
+    })
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+}
+</script>
+  <li><button onClick="enableTenant()">Enable tenant</button></li>
 </ul>`)
 		return
 	} else if path == "/admin/health" {
@@ -145,6 +166,8 @@ This is <a href="https://github.com/folio-org/mod-reporting">mod-reporting</a>. 
 		runWithErrorHandling(w, req, server, handleUpdates)
 	} else if path == "/ldp/db/processes" {
 		runWithErrorHandling(w, req, server, handleProcesses)
+	} else if path == "/_/tenant" && req.Method == "POST" {
+		runWithErrorHandling(w, req, server, handleTenantAPI)
 	} else {
 		// Unrecognized
 		w.WriteHeader(http.StatusNotFound)

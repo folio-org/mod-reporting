@@ -5,7 +5,7 @@ go 1.23.6  // also update the version in Dockerfile
 require (
 	github.com/MikeTaylor/catlogger v0.0.2
 	github.com/google/uuid v1.4.0
-	github.com/indexdata/foliogo v0.1.6
+	github.com/indexdata/foliogo v0.1.7
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/pashagolub/pgxmock/v3 v3.2.0
 	github.com/stretchr/testify v1.8.4
