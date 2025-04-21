@@ -13,7 +13,7 @@ type jsonTenantParameters struct {
 
 type jsonTenantApi struct {
 	Module_to  string                 `json:"module_to"`
-	Parameters []jsonTenantParameters `json:parameters`
+	Parameters []jsonTenantParameters `json:"parameters"`
 }
 
 func handleTenantAPI(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
