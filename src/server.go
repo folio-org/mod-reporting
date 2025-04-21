@@ -119,8 +119,8 @@ This is <a href="https://github.com/folio-org/mod-reporting">mod-reporting</a>. 
   <li><a href="/ldp/db/updates">Updates</a></li>
   <li><a href="/ldp/db/processes">Processes</a></li>
 <script>
-function enableTenant() {
-  fetch('http://localhost:12369/_/tenant', {
+async function enableTenant() {
+  const response = await fetch('http://localhost:12369/_/tenant', {
     method: 'POST',
     headers: {
       'Content-type': 'application/json',
@@ -133,9 +133,10 @@ function enableTenant() {
       ]
     })
   })
-  .then(response => response.json())
-  .then(data => console.log(data))
-  .catch(error => console.error('Error:', error))
+
+  console.log('got response', response)
+  const text = await response.text()
+  alert(response.status + " " + response.statusText + ": " + text)
 }
 </script>
   <li><button onClick="enableTenant()">Enable tenant</button></li>
