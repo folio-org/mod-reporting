@@ -208,7 +208,6 @@ func makeSql(query jsonQuery, session *ModReportingSession, token string) (strin
 	sql := "SELECT " + makeColumns(qt.Columns) + ` FROM "` + qt.Schema + `"."` + qt.Table + `"`
 
 	columns, err := getColumnsByParams(session, qt.Schema, qt.Table, token)
-	session.Log("op", fmt.Sprintf("columns = %+v", columns))
 	if err != nil {
 		return "", nil, fmt.Errorf("could not obtain columns for %s.%s:%w", qt.Schema, qt.Table, err)
 	}
