@@ -1,4 +1,4 @@
-SRC=main.go configured-server.go config-file.go getdbinfo.go http-error.go server.go session.go ldp-config.go reporting.go
+SRC=main.go configured-server.go config-file.go getdbinfo.go http-error.go server.go session.go ldp-config.go reporting.go tenant.go
 TESTSRC=config-file_test.go ldp-config_test.go mod-reporting_test.go
 TARGET=../target/mod-reporting
 
