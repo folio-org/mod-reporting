@@ -180,7 +180,7 @@ func handleQuery(w http.ResponseWriter, req *http.Request, session *ModReporting
 		return fmt.Errorf("could not deserialize JSON from body: %w", err)
 	}
 
-	sql, params, err := makeSql(query)
+	sql, params, err := makeSql(query, session, req.Header.Get("X-Okapi-Token"))
 	if err != nil {
 		return fmt.Errorf("could not generate SQL from JSON query: %w", err)
 	}
@@ -199,14 +199,24 @@ func handleQuery(w http.ResponseWriter, req *http.Request, session *ModReporting
 	return sendJSON(w, result, "query result")
 }
 
-func makeSql(query jsonQuery) (string, []any, error) {
+func makeSql(query jsonQuery, session *ModReportingSession, token string) (string, []any, error) {
 	if len(query.Tables) != 1 {
 		return "", nil, fmt.Errorf("query must have exactly one table")
 	}
 	qt := query.Tables[0]
 
 	sql := "SELECT " + makeColumns(qt.Columns) + ` FROM "` + qt.Schema + `"."` + qt.Table + `"`
-	filterString, params := makeCond(qt.Filters)
+
+	columns, err := getColumnsByParams(session, qt.Schema, qt.Table, token)
+	session.Log("op", fmt.Sprintf("columns = %+v", columns))
+	if err != nil {
+		return "", nil, fmt.Errorf("could not obtain columns for %s.%s:%w", qt.Schema, qt.Table, err)
+	}
+
+	filterString, params, err := makeCond(qt.Filters, columns)
+	if err != nil {
+		return "", nil, fmt.Errorf("could not construct condition: %w", err)
+	}
 	if filterString != "" {
 		sql += " WHERE " + filterString
 	}
@@ -236,7 +246,7 @@ func makeColumns(cols []string) string {
 	return s
 }
 
-func makeCond(filters []queryFilter) (string, []any) {
+func makeCond(filters []queryFilter, columns []dbColumn) (string, []any, error) {
 	params := make([]any, 0)
 
 	s := ""
@@ -255,10 +265,39 @@ func makeCond(filters []queryFilter) (string, []any) {
 		}
 		s += fmt.Sprintf("$%d", i+1)
 
+		var column dbColumn
+		for _, col := range columns {
+			if col.ColumnName == filter.Key {
+				column = col
+			}
+		}
+		if column == (dbColumn{}) {
+			return "", nil, fmt.Errorf("filter on invalid column %s", filter.Key)
+		}
+
+		err := validateValue(filter.Value, column)
+		if err != nil {
+			return "", nil, fmt.Errorf("invalid value for field %s (%v): %w", filter.Key, filter.Value, err)
+		}
+
 		params = append(params, filter.Value)
 	}
 
-	return s, params
+	return s, params, nil
+}
+
+// There are various checks we could make here for different types,
+// but UUIDs are the big one.
+//
+func validateValue(value string, column dbColumn) error {
+	if column.DataType == "uuid" {
+		re := regexp.MustCompile(`^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$`)
+		if !re.MatchString(value) {
+			return fmt.Errorf("invalid UUID %s", value)
+		}
+	}
+
+	return nil
 }
 
 func makeOrder(orders []queryOrder) string {
