@@ -69,7 +69,7 @@ func loadSample(w http.ResponseWriter, req *http.Request, session *ModReportingS
 		return fmt.Errorf("could not POST to mod-settings: %w", err)
 	}
 
-	// XXX should allow for 304 if the ID already exists
+	// XXX Should we allow for 304 if the ID already exists?
 
 	return nil
 }
