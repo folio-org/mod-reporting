@@ -86,23 +86,38 @@ func handleColumns(w http.ResponseWriter, req *http.Request, session *ModReporti
 		return fmt.Errorf("must specify both schema and table")
 	}
 
+	columns, err := getColumnsByParams(session, schema, table, req.Header.Get("X-Okapi-Token"))
+	if err != nil {
+		return err
+	}
+
+	return sendJSON(w, columns, "columns")
+}
+
+// Given a session, schema name and table name, returns the set of
+// columns, either from cache or from the database. In the later case,
+// the token is used, if needed, to find the information FOLIO has
+// about the reporting database.
+//
+func getColumnsByParams(session *ModReportingSession, schema string, table string, token string) ([]dbColumn, error) {
 	key := session.key() + ":" + schema + ":" + table
 	columns := session2columns[key]
-	if len(columns) == 0 {
-		dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
+	if columns == nil {
+		dbConn, err := session.findDbConn(token)
 		if err != nil {
-			return fmt.Errorf("could not find reporting DB: %w", err)
+			return nil, fmt.Errorf("could not find reporting DB: %w", err)
 		}
 		columns, err = fetchColumns(dbConn, schema, table)
 		if err != nil {
-			return fmt.Errorf("could not fetch columns from reporting DB: %w", err)
+			return nil, fmt.Errorf("could not fetch columns from reporting DB: %w", err)
 		}
 
 		session2columns[key] = columns
 	}
 
-	return sendJSON(w, columns, "columns")
+	return columns, nil
 }
+
 
 func fetchColumns(dbConn PgxIface, schema string, table string) ([]dbColumn, error) {
 	// This seems to work for both MetaDB and LDP Classic
