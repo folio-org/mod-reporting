@@ -180,6 +180,11 @@
         "ldp.updates.read",
         "ldp.processes.read"
       ]
+    },
+    {
+      "permissionName": "mod-settings.global.write.ui-ldp.admin",
+      "displayName": "Settings (Reporting): write Reporting administrative settings",
+      "visible": false
     }
   ],
   "launchDescriptor" : {
