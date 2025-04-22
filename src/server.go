@@ -84,7 +84,7 @@ func (server *ModReportingServer) launch() error {
 
 // We maintain a map of tenant:url to session
 func (server *ModReportingServer) findSession(url string, tenant string, token string) (*ModReportingSession, error) {
-	key := tenant + ":" + url + ":" + token
+	key := sessionKey(url, tenant, token)
 	session := server.sessions[key]
 	if session != nil {
 		return session, nil
