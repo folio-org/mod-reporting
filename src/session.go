@@ -82,6 +82,10 @@ func sessionKey(url string, tenant string, token string) string {
 	return tenant + ":" + url + ":" + token
 }
 
+func (session *ModReportingSession) key() string {
+	return sessionKey(session.url, session.tenant, session.token)
+}
+
 func (session *ModReportingSession) makeDbConn(token string) (PgxIface, bool, error) {
 	dbUrl, dbUser, dbPass, err := getDbInfo(session.folioSession, token)
 	if err != nil {

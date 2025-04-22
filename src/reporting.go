@@ -75,6 +75,9 @@ func fetchTables(dbConn PgxIface, isMetaDB bool) ([]dbTable, error) {
 	return pgx.CollectRows(rows, pgx.RowToStructByName[dbTable])
 }
 
+// Private to handleColumns
+var session2columns = make(map[string][]dbColumn)
+
 func handleColumns(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
 	v := req.URL.Query()
 	schema := v.Get("schema")
@@ -83,13 +86,19 @@ func handleColumns(w http.ResponseWriter, req *http.Request, session *ModReporti
 		return fmt.Errorf("must specify both schema and table")
 	}
 
-	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
-	if err != nil {
-		return fmt.Errorf("could not find reporting DB: %w", err)
-	}
-	columns, err := fetchColumns(dbConn, schema, table)
-	if err != nil {
-		return fmt.Errorf("could not fetch columns from reporting DB: %w", err)
+	key := session.key() + ":" + schema + ":" + table
+	columns := session2columns[key]
+	if len(columns) == 0 {
+		dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
+		if err != nil {
+			return fmt.Errorf("could not find reporting DB: %w", err)
+		}
+		columns, err = fetchColumns(dbConn, schema, table)
+		if err != nil {
+			return fmt.Errorf("could not fetch columns from reporting DB: %w", err)
+		}
+
+		session2columns[key] = columns
 	}
 
 	return sendJSON(w, columns, "columns")
