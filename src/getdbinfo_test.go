@@ -5,7 +5,7 @@ import "testing"
 import "github.com/stretchr/testify/assert"
 
 func Test_getDbInfo(t *testing.T) {
-	ts := MakeDummyModSettingsServer()
+	ts := MakeMockHTTPServer()
 	defer ts.Close()
 	baseUrl := ts.URL
 

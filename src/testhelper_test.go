@@ -30,7 +30,7 @@ type testT struct {
 }
 
 // Dummy HTTP server used by multiple tests
-func MakeDummyModSettingsServer() *httptest.Server {
+func MakeMockHTTPServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.URL.Path == "/settings/entries" &&
 			req.URL.RawQuery == `query=scope=="ui-ldp.admin"` {

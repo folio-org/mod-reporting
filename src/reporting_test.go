@@ -115,7 +115,7 @@ func Test_makeSql(t *testing.T) {
 }
 
 func Test_reportingHandlers(t *testing.T) {
-	ts := MakeDummyModSettingsServer()
+	ts := MakeMockHTTPServer()
 	defer ts.Close()
 	baseUrl := ts.URL
 

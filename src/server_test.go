@@ -12,7 +12,7 @@ import "github.com/pashagolub/pgxmock/v3"
 import "github.com/stretchr/testify/assert"
 
 func Test_server(t *testing.T) {
-	ts := MakeDummyModSettingsServer()
+	ts := MakeMockHTTPServer()
 	defer ts.Close()
 	server, err := MakeConfiguredServer("../etc/silent.json", "..")
 	assert.Nil(t, err)

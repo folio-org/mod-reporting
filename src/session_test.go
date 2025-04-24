@@ -5,7 +5,7 @@ import "testing"
 import "github.com/stretchr/testify/assert"
 
 func Test_session(t *testing.T) {
-	ts := MakeDummyModSettingsServer()
+	ts := MakeMockHTTPServer()
 	defer ts.Close()
 
 	server, err := MakeConfiguredServer("../etc/silent.json", ".")
