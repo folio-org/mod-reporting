@@ -209,7 +209,7 @@ func makeSql(query jsonQuery, session *ModReportingSession, token string) (strin
 
 	columns, err := getColumnsByParams(session, qt.Schema, qt.Table, token)
 	if err != nil {
-		return "", nil, fmt.Errorf("could not obtain columns for %s.%s:%w", qt.Schema, qt.Table, err)
+		return "", nil, fmt.Errorf("could not obtain columns for %s.%s: %w", qt.Schema, qt.Table, err)
 	}
 
 	filterString, params, err := makeCond(qt.Filters, columns)
