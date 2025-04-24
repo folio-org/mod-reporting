@@ -167,8 +167,10 @@ async function enableTenant() {
 		runWithErrorHandling(w, req, server, handleUpdates)
 	} else if path == "/ldp/db/processes" {
 		runWithErrorHandling(w, req, server, handleProcesses)
+/*
 	} else if path == "/_/tenant" && req.Method == "POST" {
 		runWithErrorHandling(w, req, server, handleTenantAPI)
+*/
 	} else {
 		// Unrecognized
 		w.WriteHeader(http.StatusNotFound)
