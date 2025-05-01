@@ -4,7 +4,6 @@
 
 * Smaller base images in Dockerfile. Fixes MODREP-24.
 * Support validation of report URLs by reference to a whitelist of regexps in the configuration file. Fixes MODREP-4.
-* When enabling this module for a tenant, sample data is now loaded for the report repositories. Fixes MODREP-25.
 
 ## [1.3.1](https://github.com/folio-org/mod-reporting/tree/v1.3.1) (2025-03-12)
 
