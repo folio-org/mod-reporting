@@ -9,8 +9,6 @@ github.com/gopherjs/gopherjs v1.17.2 h1:fQnZVsXk8uxXIStYb0N4bGk7jeyTalG/wsZjQ25d
 github.com/gopherjs/gopherjs v1.17.2/go.mod h1:pRRIvn/QzFLrKfvEz3qUuEhtE/zLCWfreZ6J5gM2i+k=
 github.com/indexdata/foliogo v0.1.6 h1:rYrfNJWTF3dGpTK6k39kIkdqE/QUy8fm0kMZTlPYS6w=
 github.com/indexdata/foliogo v0.1.6/go.mod h1:p8EOx+lBZcnNMftquXxRhgIIjrqd0+uqiY1l97qFu8I=
-github.com/indexdata/foliogo v0.1.7 h1:iTudwYoLMZb/69NzeARY+wGNA1Gae62jyF37jv7UA0o=
-github.com/indexdata/foliogo v0.1.7/go.mod h1:p8EOx+lBZcnNMftquXxRhgIIjrqd0+uqiY1l97qFu8I=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
 github.com/jackc/pgpassfile v1.0.0/go.mod h1:CEx0iS5ambNFdcRtxPj5JhEz+xB6uRky5eyVu/W2HEg=
 github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 h1:iCEnooe7UlwOQYpKFhBabPMi4aNAfoODPEFNiAnClxo=
