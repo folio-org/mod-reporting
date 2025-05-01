@@ -157,6 +157,7 @@ func establishMockForColumns(mock pgxmock.PgxPoolIface) error {
 		WithArgs("folio_users", "users", "data").
 		WillReturnRows(pgxmock.NewRows([]string{"column_name", "data_type", "ordinal_position", "table_schema", "table_name"}).
 			AddRow("id", "uuid", "6", "folio_users", "users").
+			AddRow("user", "string", "7", "folio_users", "users").
 			AddRow("creation_date", "timestamp without time zone", "8", "folio_users", "users"))
 	return nil
 }
