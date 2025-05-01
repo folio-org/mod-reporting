@@ -1,6 +1,6 @@
 # mod-reporting
 
-Copyright (C) 2023-2025 The Open Library Foundation
+Copyright (C) 2023-2024 The Open Library Foundation
 
 This software is distributed under the terms of the Apache License, Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
 
@@ -12,7 +12,6 @@ This software is distributed under the terms of the Apache License, Version 2.0.
     * [Logging](#logging)
     * [FOLIO services and reporting databases](#folio-services-and-reporting-databases)
 * [Notes](#notes)
-    * [Duplicate permission](#duplicate-permission)
     * [Redundant field in API](#redundant-field-in-api)
     * [CORS problems when running locally](#cors-problems-when-running-locally)
 * [See also](#see-also)
@@ -24,8 +23,6 @@ This software is distributed under the terms of the Apache License, Version 2.0.
     * [Code analysis](#code-analysis)
     * [Download and configuration](#download-and-configuration)
 * [Author](#author)
-
-
 
 ## Overview
 
@@ -129,10 +126,6 @@ Similarly, in normal operation, mod-reporting determines which underlying report
 
 ## Notes
 
-
-### Duplicate permission
-
-For reasons discussed in [MODREP-25](https://folio-org.atlassian.net/browse/MODREP-25), [the module descriptor](descriptors/ModuleDescriptor-template.json) contains a permission -- `mod-settings.global.write.ui-ldp.admin` -- that is also defined, identically, in [ui-ldp](https://github.com/folio-org/ui-ldp). In time, the ui-ldp version will be removed, but until then **be careful not to make changes to this permission**.
 
 ### Redundant field in API
 
