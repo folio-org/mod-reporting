@@ -4,6 +4,7 @@
 
 * Smaller base images in Dockerfile. Fixes MODREP-24.
 * Support validation of report URLs by reference to a whitelist of regexps in the configuration file. Fixes MODREP-4.
+* In JSON queries, ignore order-by elements when the fieldname is empty. Fixes MODREP-28.
 
 ## [1.3.1](https://github.com/folio-org/mod-reporting/tree/v1.3.1) (2025-03-12)
 

@@ -217,8 +217,9 @@ func makeSql(query jsonQuery, session *ModReportingSession, token string) (strin
 	if filterString != "" {
 		sql += " WHERE " + filterString
 	}
-	if len(qt.Order) > 0 {
-		sql += " ORDER BY " + makeOrder(qt.Order)
+	orderString := makeOrder(qt.Order)
+	if orderString != "" {
+		sql += " ORDER BY " + orderString
 	}
 	if qt.Limit != 0 {
 		sql += fmt.Sprintf(" LIMIT %d", qt.Limit)
@@ -298,7 +299,13 @@ func validateValue(value string, column dbColumn) error {
 
 func makeOrder(orders []queryOrder) string {
 	s := ""
-	for i, order := range orders {
+	for _, order := range orders {
+		if order.Key == "" {
+			continue
+		}
+		if s != "" {
+			s += ", "
+		}
 		s += order.Key
 		s += " " + order.Direction
 		// Historically, ui-ldp sends "start" or "end"
@@ -308,9 +315,6 @@ func makeOrder(orders []queryOrder) string {
 			s += " NULLS FIRST"
 		} else {
 			s += " NULLS LAST"
-		}
-		if i < len(orders)-1 {
-			s += ", "
 		}
 	}
 

@@ -98,6 +98,26 @@ func Test_makeSql(t *testing.T) {
 			expectedArgs: []string{},
 		},
 		{
+			name: "query with missing first order",
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users",
+				"orderBy": [
+					{ "direction": "asc", "nulls": "start" },
+					{ "key": "id", "direction": "desc", "nulls": "end" }
+				] }] }`,
+			expected:     `SELECT * FROM "folio_users"."users" ORDER BY id desc NULLS LAST`,
+			expectedArgs: []string{},
+		},
+		{
+			name: "query with missing last order",
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users",
+				"orderBy": [
+					{ "key": "user", "direction": "asc", "nulls": "start" },
+					{ "direction": "desc", "nulls": "end" }
+				] }] }`,
+			expected:     `SELECT * FROM "folio_users"."users" ORDER BY user asc NULLS FIRST`,
+			expectedArgs: []string{},
+		},
+		{
 			name:         "query with limit",
 			sendData:     `{ "tables": [{ "schema": "folio_users", "tableName": "users", "limit": 99 }] }`,
 			expected:     `SELECT * FROM "folio_users"."users" LIMIT 99`,
