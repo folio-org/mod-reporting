@@ -153,7 +153,7 @@ func establishMockForTables(mock pgxmock.PgxPoolIface) error {
 }
 
 func establishMockForColumns(mock pgxmock.PgxPoolIface) error {
-	mock.ExpectQuery(`SELECT`).
+	mock.ExpectQuery(`SELECT column_name, data_type, ordinal_position, table_schema, table_name FROM information_schema.columns`).
 		WithArgs("folio_users", "users", "data").
 		WillReturnRows(pgxmock.NewRows([]string{"column_name", "data_type", "ordinal_position", "table_schema", "table_name"}).
 			AddRow("id", "uuid", "6", "folio_users", "users").
@@ -163,7 +163,7 @@ func establishMockForColumns(mock pgxmock.PgxPoolIface) error {
 }
 
 func establishMockForQuery(mock pgxmock.PgxPoolIface) error {
-	mock.ExpectQuery(`SELECT \* FROM "folio"."users"`).
+	mock.ExpectQuery(`SELECT \* FROM "folio_users"."users"`).
 		WillReturnRows(pgxmock.NewRows([]string{"name", "email"}).
 			AddRow("mike", "mike@example.com").
 			AddRow("fiona", "fiona@example.com"))
