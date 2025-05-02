@@ -77,7 +77,6 @@ func (session *ModReportingSession) Log(cat string, args ...string) {
 // Returns a unique string opaquely identifying a session with the
 // specified url, tenant and token. This is suitable to be used as a
 // key in a lookup table.
-//
 func sessionKey(url string, tenant string, token string) string {
 	return tenant + ":" + url + ":" + token
 }

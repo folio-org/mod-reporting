@@ -98,7 +98,6 @@ func handleColumns(w http.ResponseWriter, req *http.Request, session *ModReporti
 // columns, either from cache or from the database. In the later case,
 // the token is used, if needed, to find the information FOLIO has
 // about the reporting database.
-//
 func getColumnsByParams(session *ModReportingSession, schema string, table string, token string) ([]dbColumn, error) {
 	key := session.key() + ":" + schema + ":" + table
 	columns := session2columns[key]
@@ -117,7 +116,6 @@ func getColumnsByParams(session *ModReportingSession, schema string, table strin
 
 	return columns, nil
 }
-
 
 func fetchColumns(dbConn PgxIface, schema string, table string) ([]dbColumn, error) {
 	// This seems to work for both MetaDB and LDP Classic
@@ -287,7 +285,6 @@ func makeCond(filters []queryFilter, columns []dbColumn) (string, []any, error) 
 
 // There are various checks we could make here for different types,
 // but UUIDs are the big one.
-//
 func validateValue(value string, column dbColumn) error {
 	if column.DataType == "uuid" {
 		re := regexp.MustCompile(`^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$`)
