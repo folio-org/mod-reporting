@@ -119,6 +119,7 @@ func Test_makeSql(t *testing.T) {
 	assert.Nil(t, err)
 	mockPostgres, err := pgxmock.NewPool(pgxmock.QueryMatcherOption(&LoggingMatcher{
 		QueryMatcher: pgxmock.QueryMatcherRegexp,
+		log: false,
 	}))
 	assert.Nil(t, err)
 	session.dbConn = mockPostgres
