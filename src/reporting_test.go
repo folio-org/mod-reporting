@@ -10,6 +10,8 @@ import "github.com/pashagolub/pgxmock/v3"
 import "net/http/httptest"
 
 func Test_makeSql(t *testing.T) {
+	uuid := "4f41bd4c-09fb-41a0-8f18-c347f4e81877"
+
 	tests := []testT{
 		{
 			name:     "empty query",
@@ -23,75 +25,104 @@ func Test_makeSql(t *testing.T) {
 		},
 		{
 			name:     "simplest query",
-			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users" }] }`,
-			expected: `SELECT * FROM "folio"."users"`,
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users" }] }`,
+			expected: `SELECT * FROM "folio_users"."users"`,
 		},
 		{
 			name: "query with columns",
-			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users",
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users",
 				 "showColumns": ["id", "username"] }] }`,
-			expected:     `SELECT id, username FROM "folio"."users"`,
+			expected:     `SELECT id, username FROM "folio_users"."users"`,
 			expectedArgs: []string{},
 		},
 		{
 			name: "query with empty condition",
-			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users",
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users",
 				"columnFilters": [{}] }] }`,
-			expected:     `SELECT * FROM "folio"."users"`,
+			expected:     `SELECT * FROM "folio_users"."users"`,
 			expectedArgs: []string{},
 		},
 		{
 			name: "query with implicit condition",
-			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users",
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users",
+				"columnFilters": [
+					{ "key": "id", "value": "` + uuid + `" }
+				] }] }`,
+			expected:     `SELECT * FROM "folio_users"."users" WHERE id = $1`,
+			expectedArgs: []string{uuid},
+		},
+		{
+			name: "query on invalid column",
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users",
+				"columnFilters": [
+					{ "key": "xid", "value": "43" }
+				] }] }`,
+			errorstr: "filter on invalid column",
+		},
+		{
+			name: "query with invalid uuid",
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users",
 				"columnFilters": [
 					{ "key": "id", "value": "43" }
 				] }] }`,
-			expected:     `SELECT * FROM "folio"."users" WHERE id = $1`,
-			expectedArgs: []string{"43"},
+			errorstr: "invalid value for field id",
 		},
 		{
 			name: "query with multiple conditions",
-			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users",
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users",
 				"columnFilters": [
-					{ "key": "id", "op": ">", "value": "42" },
-					{ "key": "user", "op": "LIKE", "value": "mi%" }
+					{ "key": "id", "op": "<>", "value": "` + uuid + `" },
+					{ "key": "creation_date", "op": ">", "value": "1968-03-12" }
 				] }] }`,
-			expected:     `SELECT * FROM "folio"."users" WHERE id > $1 AND user LIKE $2`,
-			expectedArgs: []string{"42", "mi%"},
+			expected:     `SELECT * FROM "folio_users"."users" WHERE id <> $1 AND creation_date > $2`,
+			expectedArgs: []string{uuid, "1968-03-12"},
 		},
 		{
 			name: "query with real and empty conditions",
-			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users",
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users",
 				"columnFilters": [
 					{},
 					{ "key": "user", "op": "LIKE", "value": "mi%" }
 				] }] }`,
-			expected:     `SELECT * FROM "folio"."users" WHERE user LIKE $2`,
+			expected:     `SELECT * FROM "folio_users"."users" WHERE user LIKE $2`,
 			expectedArgs: []string{"mi%"},
 		},
 		{
 			name: "query with order",
-			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users",
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users",
 				"orderBy": [
 					{ "key": "user", "direction": "asc", "nulls": "start" },
 					{ "key": "id", "direction": "desc", "nulls": "end" }
 				] }] }`,
-			expected:     `SELECT * FROM "folio"."users" ORDER BY user asc NULLS FIRST, id desc NULLS LAST`,
+			expected:     `SELECT * FROM "folio_users"."users" ORDER BY user asc NULLS FIRST, id desc NULLS LAST`,
 			expectedArgs: []string{},
 		},
 		{
 			name:         "query with limit",
-			sendData:     `{ "tables": [{ "schema": "folio", "tableName": "users", "limit": 99 }] }`,
-			expected:     `SELECT * FROM "folio"."users" LIMIT 99`,
+			sendData:     `{ "tables": [{ "schema": "folio_users", "tableName": "users", "limit": 99 }] }`,
+			expected:     `SELECT * FROM "folio_users"."users" LIMIT 99`,
 			expectedArgs: []string{},
 		},
 		{
 			name:         "make me one with everything",
-			sendData:     `{ "tables": [{"limit": 11,"schema": "folio_inventory","orderBy": [{"direction": "asc","nulls": "end","key": "status_updated_date"},{"direction": "asc","nulls": "start","key": "__id"}],"showColumns": ["id","status_updated_date","hrid","title","source"],"columnFilters": [{"key": "status_updated_date","op": ">=","value": "2022-06-09T19:01:33.757+00:00"},{"key": "hrid","op": "<>","value": "in00000000005"}],"tableName": "instance__t"}]}`,
-			expected:     `SELECT id, status_updated_date, hrid, title, source FROM "folio_inventory"."instance__t" WHERE status_updated_date >= $1 AND hrid <> $2 ORDER BY status_updated_date asc NULLS LAST, __id asc NULLS FIRST LIMIT 11`,
-			expectedArgs: []string{"2022-06-09T19:01:33.757+00:00", "in00000000005"},
+			sendData:     `{ "tables": [{"limit": 11,"schema": "folio_users","orderBy": [{"direction": "asc","nulls": "end","key": "creation_date"},{"direction": "asc","nulls": "start","key": "__id"}],"showColumns": ["id","creation_date","hrid","title","source"],"columnFilters": [{"key": "creation_date","op": ">=","value": "2022-06-09T19:01:33.757+00:00"},{"key": "id","op": "<>","value": "` + uuid + `"}],"tableName": "users"}]}`,
+			expected:     `SELECT id, creation_date, hrid, title, source FROM "folio_users"."users" WHERE creation_date >= $1 AND id <> $2 ORDER BY creation_date asc NULLS LAST, __id asc NULLS FIRST LIMIT 11`,
+			expectedArgs: []string{"2022-06-09T19:01:33.757+00:00", uuid},
 		},
 	}
+
+	ts := MakeMockHTTPServer()
+	defer ts.Close()
+	mrs, err := MakeConfiguredServer("../etc/silent.json", ".")
+	assert.Nil(t, err)
+	session, err := NewModReportingSession(mrs, ts.URL, "dummyTenant", "dummyToken")
+	assert.Nil(t, err)
+	mockPostgres, err := pgxmock.NewPool(pgxmock.QueryMatcherOption(&LoggingMatcher{
+		QueryMatcher: pgxmock.QueryMatcherRegexp,
+		log:          false,
+	}))
+	assert.Nil(t, err)
+	session.dbConn = mockPostgres
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -99,7 +130,11 @@ func Test_makeSql(t *testing.T) {
 			var jq jsonQuery
 			err := json.Unmarshal(bytes, &jq)
 			assert.Nil(t, err)
-			sql, params, err := makeSql(jq)
+
+			err = establishMockForColumns(mockPostgres)
+			assert.Nil(t, err)
+
+			sql, params, err := makeSql(jq, session, "")
 			if test.errorstr == "" {
 				assert.Nil(t, err)
 				assert.Equal(t, test.expected, sql)
@@ -115,7 +150,7 @@ func Test_makeSql(t *testing.T) {
 }
 
 func Test_reportingHandlers(t *testing.T) {
-	ts := MakeDummyModSettingsServer()
+	ts := MakeMockHTTPServer()
 	defer ts.Close()
 	baseUrl := ts.URL
 
@@ -185,7 +220,7 @@ func Test_reportingHandlers(t *testing.T) {
 				return establishMockForColumns(data.(pgxmock.PgxPoolIface))
 			},
 			function: handleColumns,
-			expected: `{"columnName":"id","data_type":"uuid","tableSchema":"folio_users","tableName":"users","ordinalPosition":"6"},{"columnName":"creation_date","data_type":"timestamp without time zone","tableSchema":"folio_users","tableName":"users","ordinalPosition":"8"}]`,
+			expected: `{"columnName":"id","data_type":"uuid","tableSchema":"folio_users","tableName":"users","ordinalPosition":"6"},{"columnName":"user","data_type":"string","tableSchema":"folio_users","tableName":"users","ordinalPosition":"7"},{"columnName":"creation_date","data_type":"timestamp without time zone","tableSchema":"folio_users","tableName":"users","ordinalPosition":"8"}]`,
 		},
 		{
 			name:     "fail non-JSON query",
@@ -246,7 +281,7 @@ func Test_reportingHandlers(t *testing.T) {
 		{
 			name:     "simple query with dummy results",
 			path:     "/ldp/db/query",
-			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users" }] }`,
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users" }] }`,
 			establishMock: func(data interface{}) error {
 				return establishMockForQuery(data.(pgxmock.PgxPoolIface))
 			},
@@ -257,7 +292,7 @@ func Test_reportingHandlers(t *testing.T) {
 			// This test doesn't really test anything except my ability to mock PGX errors
 			name:     "query with an empty filter",
 			path:     "/ldp/db/query",
-			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users", "columnFilters": [{}] }] }`,
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users", "columnFilters": [{}] }] }`,
 			establishMock: func(data interface{}) error {
 				return establishMockForEmptyFilterQuery(data.(pgxmock.PgxPoolIface))
 			},
@@ -420,7 +455,10 @@ func Test_reportingHandlers(t *testing.T) {
 			}
 			req := httptest.NewRequest(method, baseUrl+test.path, reader)
 
-			mock, err := pgxmock.NewPool()
+			mock, err := pgxmock.NewPool(pgxmock.QueryMatcherOption(&LoggingMatcher{
+				QueryMatcher: pgxmock.QueryMatcherRegexp,
+				log:          false,
+			}))
 			assert.Nil(t, err)
 			defer mock.Close()
 

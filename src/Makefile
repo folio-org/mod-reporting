@@ -28,7 +28,7 @@ test:
 	@echo "go tool cover -func=coverage.out | sed 's/^github.com\/folio-org\/mod-reporting\/src\///'"
 
 test1:
-	go test -v -coverprofile=coverage.out . -run Test_reporting
+	go test -v -coverprofile=coverage.out . -run Test_makeSql
 
 cover: coverage.out
 	go tool cover -html=coverage.out

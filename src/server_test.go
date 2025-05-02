@@ -12,7 +12,7 @@ import "github.com/pashagolub/pgxmock/v3"
 import "github.com/stretchr/testify/assert"
 
 func Test_server(t *testing.T) {
-	ts := MakeDummyModSettingsServer()
+	ts := MakeMockHTTPServer()
 	defer ts.Close()
 	server, err := MakeConfiguredServer("../etc/silent.json", "..")
 	assert.Nil(t, err)
@@ -98,12 +98,12 @@ func runTests(t *testing.T, baseUrl string, session *ModReportingSession) {
 				return establishMockForColumns(data.(pgxmock.PgxPoolIface))
 			},
 			status:   200,
-			expected: `{"columnName":"id","data_type":"uuid","tableSchema":"folio_users","tableName":"users","ordinalPosition":"6"},{"columnName":"creation_date","data_type":"timestamp without time zone","tableSchema":"folio_users","tableName":"users","ordinalPosition":"8"}]`,
+			expected: `{"columnName":"id","data_type":"uuid","tableSchema":"folio_users","tableName":"users","ordinalPosition":"6"},{"columnName":"user","data_type":"string","tableSchema":"folio_users","tableName":"users","ordinalPosition":"7"},{"columnName":"creation_date","data_type":"timestamp without time zone","tableSchema":"folio_users","tableName":"users","ordinalPosition":"8"}]`,
 		},
 		{
 			name:     "reporting query",
 			path:     "ldp/db/query",
-			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users" }] }`,
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users" }] }`,
 			establishMock: func(data interface{}) error {
 				return establishMockForQuery(data.(pgxmock.PgxPoolIface))
 			},

@@ -62,7 +62,7 @@ func Test_handleConfig(t *testing.T) {
 		// At this point it seems silly to laboriously chase each individual error case
 	}
 
-	ts := MakeDummyModSettingsServer()
+	ts := MakeMockHTTPServer()
 	defer ts.Close()
 	baseUrl := ts.URL
 

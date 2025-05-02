@@ -74,6 +74,17 @@ func (session *ModReportingSession) Log(cat string, args ...string) {
 	session.server.Log(cat, args...)
 }
 
+// Returns a unique string opaquely identifying a session with the
+// specified url, tenant and token. This is suitable to be used as a
+// key in a lookup table.
+func sessionKey(url string, tenant string, token string) string {
+	return tenant + ":" + url + ":" + token
+}
+
+func (session *ModReportingSession) key() string {
+	return sessionKey(session.url, session.tenant, session.token)
+}
+
 func (session *ModReportingSession) makeDbConn(token string) (PgxIface, bool, error) {
 	dbUrl, dbUser, dbPass, err := getDbInfo(session.folioSession, token)
 	if err != nil {
