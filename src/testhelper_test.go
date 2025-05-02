@@ -186,7 +186,7 @@ func establishMockForQuery(mock pgxmock.PgxPoolIface) error {
 }
 
 func establishMockForEmptyFilterQuery(mock pgxmock.PgxPoolIface) error {
-	mock.ExpectQuery(`SELECT \* FROM "folio"."users"`).
+	mock.ExpectQuery(`SELECT \* FROM "folio_users"."users"`).
 		WillReturnError(errors.New(`ERROR: syntax error at or near "=" (SQLSTATE 42601)`))
 	return nil
 }

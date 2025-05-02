@@ -281,7 +281,7 @@ func Test_reportingHandlers(t *testing.T) {
 		{
 			name:     "simple query with dummy results",
 			path:     "/ldp/db/query",
-			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users" }] }`,
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users" }] }`,
 			establishMock: func(data interface{}) error {
 				return establishMockForQuery(data.(pgxmock.PgxPoolIface))
 			},
@@ -292,7 +292,7 @@ func Test_reportingHandlers(t *testing.T) {
 			// This test doesn't really test anything except my ability to mock PGX errors
 			name:     "query with an empty filter",
 			path:     "/ldp/db/query",
-			sendData: `{ "tables": [{ "schema": "folio", "tableName": "users", "columnFilters": [{}] }] }`,
+			sendData: `{ "tables": [{ "schema": "folio_users", "tableName": "users", "columnFilters": [{}] }] }`,
 			establishMock: func(data interface{}) error {
 				return establishMockForEmptyFilterQuery(data.(pgxmock.PgxPoolIface))
 			},
@@ -455,7 +455,10 @@ func Test_reportingHandlers(t *testing.T) {
 			}
 			req := httptest.NewRequest(method, baseUrl+test.path, reader)
 
-			mock, err := pgxmock.NewPool()
+			mock, err := pgxmock.NewPool(pgxmock.QueryMatcherOption(&LoggingMatcher{
+				QueryMatcher: pgxmock.QueryMatcherRegexp,
+				log: false,
+			}))
 			assert.Nil(t, err)
 			defer mock.Close()
 
