@@ -9,18 +9,6 @@ import "github.com/stretchr/testify/assert"
 import "github.com/pashagolub/pgxmock/v3"
 import "net/http/httptest"
 
-// This is useful when expectations are not met but we don't understand why.
-// Uncomment the fmt.Printf line below to see the details of each match.
-type LoggingMatcher struct {
-	pgxmock.QueryMatcher
-}
-
-func (m *LoggingMatcher) Match(expected string, actual string) error {
-	err := m.QueryMatcher.Match(expected, actual)
-	// fmt.Printf("[pgxmock] Matching query:\n --> expected: %s\n AND actual: %s\n  --> error: %v\n", expected, actual, err)
-	return err
-}
-
 func Test_makeSql(t *testing.T) {
 	uuid := "4f41bd4c-09fb-41a0-8f18-c347f4e81877"
 
