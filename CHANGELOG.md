@@ -1,4 +1,4 @@
-# Change history for mod-reporting
+# Change history for mod-reportingx
 
 ## [1.3.2](https://github.com/folio-org/mod-reporting/tree/v1.3.2) (IN PROGRESS)
 
