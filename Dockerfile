@@ -2,7 +2,10 @@
 # Run with: docker run -p 12369:12369 -e OKAPI_PW=[DIKU_ADMIN-PASSWORD] mod-reporting
 
 # also update the version in go.mod
-FROM golang:1.23-alpine AS build
+FROM golang:1.24-alpine AS build
+
+# Install latest patch versions of alpine packages: https://pythonspeed.com/articles/security-updates-in-docker/
+RUN apk upgrade --no-cache
 
 # Set destination for COPY
 WORKDIR /app
