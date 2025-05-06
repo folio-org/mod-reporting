@@ -75,6 +75,9 @@ func fetchTables(dbConn PgxIface, isMetaDB bool) ([]dbTable, error) {
 	return pgx.CollectRows(rows, pgx.RowToStructByName[dbTable])
 }
 
+// Private to handleColumns
+var session2columns = make(map[string][]dbColumn)
+
 func handleColumns(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
 	v := req.URL.Query()
 	schema := v.Get("schema")
@@ -83,16 +86,35 @@ func handleColumns(w http.ResponseWriter, req *http.Request, session *ModReporti
 		return fmt.Errorf("must specify both schema and table")
 	}
 
-	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
+	columns, err := getColumnsByParams(session, schema, table, req.Header.Get("X-Okapi-Token"))
 	if err != nil {
-		return fmt.Errorf("could not find reporting DB: %w", err)
-	}
-	columns, err := fetchColumns(dbConn, schema, table)
-	if err != nil {
-		return fmt.Errorf("could not fetch columns from reporting DB: %w", err)
+		return err
 	}
 
 	return sendJSON(w, columns, "columns")
+}
+
+// Given a session, schema name and table name, returns the set of
+// columns, either from cache or from the database. In the later case,
+// the token is used, if needed, to find the information FOLIO has
+// about the reporting database.
+func getColumnsByParams(session *ModReportingSession, schema string, table string, token string) ([]dbColumn, error) {
+	key := session.key() + ":" + schema + ":" + table
+	columns := session2columns[key]
+	if columns == nil {
+		dbConn, err := session.findDbConn(token)
+		if err != nil {
+			return nil, fmt.Errorf("could not find reporting DB: %w", err)
+		}
+		columns, err = fetchColumns(dbConn, schema, table)
+		if err != nil {
+			return nil, fmt.Errorf("could not fetch columns from reporting DB: %w", err)
+		}
+
+		session2columns[key] = columns
+	}
+
+	return columns, nil
 }
 
 func fetchColumns(dbConn PgxIface, schema string, table string) ([]dbColumn, error) {
@@ -156,7 +178,7 @@ func handleQuery(w http.ResponseWriter, req *http.Request, session *ModReporting
 		return fmt.Errorf("could not deserialize JSON from body: %w", err)
 	}
 
-	sql, params, err := makeSql(query)
+	sql, params, err := makeSql(query, session, req.Header.Get("X-Okapi-Token"))
 	if err != nil {
 		return fmt.Errorf("could not generate SQL from JSON query: %w", err)
 	}
@@ -175,19 +197,29 @@ func handleQuery(w http.ResponseWriter, req *http.Request, session *ModReporting
 	return sendJSON(w, result, "query result")
 }
 
-func makeSql(query jsonQuery) (string, []any, error) {
+func makeSql(query jsonQuery, session *ModReportingSession, token string) (string, []any, error) {
 	if len(query.Tables) != 1 {
 		return "", nil, fmt.Errorf("query must have exactly one table")
 	}
 	qt := query.Tables[0]
 
 	sql := "SELECT " + makeColumns(qt.Columns) + ` FROM "` + qt.Schema + `"."` + qt.Table + `"`
-	filterString, params := makeCond(qt.Filters)
+
+	columns, err := getColumnsByParams(session, qt.Schema, qt.Table, token)
+	if err != nil {
+		return "", nil, fmt.Errorf("could not obtain columns for %s.%s: %w", qt.Schema, qt.Table, err)
+	}
+
+	filterString, params, err := makeCond(qt.Filters, columns)
+	if err != nil {
+		return "", nil, fmt.Errorf("could not construct condition: %w", err)
+	}
 	if filterString != "" {
 		sql += " WHERE " + filterString
 	}
-	if len(qt.Order) > 0 {
-		sql += " ORDER BY " + makeOrder(qt.Order)
+	orderString := makeOrder(qt.Order)
+	if orderString != "" {
+		sql += " ORDER BY " + orderString
 	}
 	if qt.Limit != 0 {
 		sql += fmt.Sprintf(" LIMIT %d", qt.Limit)
@@ -212,7 +244,7 @@ func makeColumns(cols []string) string {
 	return s
 }
 
-func makeCond(filters []queryFilter) (string, []any) {
+func makeCond(filters []queryFilter, columns []dbColumn) (string, []any, error) {
 	params := make([]any, 0)
 
 	s := ""
@@ -231,15 +263,49 @@ func makeCond(filters []queryFilter) (string, []any) {
 		}
 		s += fmt.Sprintf("$%d", i+1)
 
+		var column dbColumn
+		for _, col := range columns {
+			if col.ColumnName == filter.Key {
+				column = col
+			}
+		}
+		if column == (dbColumn{}) {
+			return "", nil, fmt.Errorf("filter on invalid column %s", filter.Key)
+		}
+
+		err := validateValue(filter.Value, column)
+		if err != nil {
+			return "", nil, fmt.Errorf("invalid value for field %s (%v): %w", filter.Key, filter.Value, err)
+		}
+
 		params = append(params, filter.Value)
 	}
 
-	return s, params
+	return s, params, nil
+}
+
+// There are various checks we could make here for different types,
+// but UUIDs are the big one.
+func validateValue(value string, column dbColumn) error {
+	if column.DataType == "uuid" {
+		re := regexp.MustCompile(`^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$`)
+		if !re.MatchString(value) {
+			return fmt.Errorf("invalid UUID %s", value)
+		}
+	}
+
+	return nil
 }
 
 func makeOrder(orders []queryOrder) string {
 	s := ""
-	for i, order := range orders {
+	for _, order := range orders {
+		if order.Key == "" {
+			continue
+		}
+		if s != "" {
+			s += ", "
+		}
 		s += order.Key
 		s += " " + order.Direction
 		// Historically, ui-ldp sends "start" or "end"
@@ -249,9 +315,6 @@ func makeOrder(orders []queryOrder) string {
 			s += " NULLS FIRST"
 		} else {
 			s += " NULLS LAST"
-		}
-		if i < len(orders)-1 {
-			s += ", "
 		}
 	}
 
@@ -265,8 +328,8 @@ type reportQuery struct {
 }
 
 type reportResponse struct {
-	TotalRecords int              `json:"totalRecords"`
-	Records      []map[string]any `json:"records"`
+	TotalRecords int          `json:"totalRecords"`
+	Records      []OrderedMap `json:"records"`
 }
 
 func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
@@ -530,15 +593,21 @@ func makeFunctionCall(sql string, params map[string]string, limit int) (string, 
 	return cmd, orderedParams, nil
 }
 
-func collectAndFixRows(rows pgx.Rows) ([]map[string]any, error) {
+func collectAndFixRows(rows pgx.Rows) ([]OrderedMap, error) {
 	records, err := pgx.CollectRows(rows, pgx.RowToMap)
 	// fmt.Printf("rows: %+v\n", rows.FieldDescriptions())
 	if err != nil {
 		return nil, fmt.Errorf("could not collect query result data: %w", err)
 	}
+	fd := rows.FieldDescriptions()
+	fieldOrder := make([]string, len(fd))
+	for i, entry := range fd {
+		fieldOrder[i] = entry.Name
+	}
 
-	// Fix up types
-	for _, rec := range records {
+	// Fix up types and translate into ordered maps
+	result := make([]OrderedMap, len(records))
+	for i, rec := range records {
 		for key, val := range rec {
 			switch v := val.(type) {
 			case [16]uint8:
@@ -548,9 +617,11 @@ func collectAndFixRows(rows pgx.Rows) ([]map[string]any, error) {
 				// Nothing to do
 			}
 		}
+
+		result[i] = MapToOrderedMap(rec, fieldOrder)
 	}
 
-	return records, nil
+	return result, nil
 }
 
 func sendJSON(w http.ResponseWriter, data any, caption string) error {

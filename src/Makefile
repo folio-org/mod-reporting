@@ -1,4 +1,4 @@
-SRC=main.go configured-server.go config-file.go getdbinfo.go http-error.go server.go session.go ldp-config.go reporting.go
+SRC=main.go configured-server.go config-file.go getdbinfo.go http-error.go server.go session.go ldp-config.go reporting.go ordered-map.go
 TESTSRC=config-file_test.go ldp-config_test.go mod-reporting_test.go
 TARGET=../target/mod-reporting
 
@@ -28,7 +28,7 @@ test:
 	@echo "go tool cover -func=coverage.out | sed 's/^github.com\/folio-org\/mod-reporting\/src\///'"
 
 test1:
-	go test -v -coverprofile=coverage.out . -run Test_reporting
+	go test -v -coverprofile=coverage.out . -run Test_makeSql
 
 cover: coverage.out
 	go tool cover -html=coverage.out

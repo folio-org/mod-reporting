@@ -14,6 +14,21 @@ func Must[T any](ret T, err error) T {
 	return ret
 }
 
+// This is useful when expectations are not met but we don't understand why.
+// Uncomment the fmt.Printf line below to see the details of each match.
+type LoggingMatcher struct {
+	pgxmock.QueryMatcher
+	log bool
+}
+
+func (m *LoggingMatcher) Match(expected string, actual string) error {
+	err := m.QueryMatcher.Match(expected, actual)
+	if m.log {
+		fmt.Printf("[pgxmock] Matching query:\n --> expected: %s\n AND actual: %s\n  --> error: %v\n", expected, actual, err)
+	}
+	return err
+}
+
 // Various parts of this structure are used by different files' tests
 type testT struct {
 	name          string
@@ -30,7 +45,7 @@ type testT struct {
 }
 
 // Dummy HTTP server used by multiple tests
-func MakeDummyModSettingsServer() *httptest.Server {
+func MakeMockHTTPServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.URL.Path == "/settings/entries" &&
 			req.URL.RawQuery == `query=scope=="ui-ldp.admin"` {
@@ -153,16 +168,17 @@ func establishMockForTables(mock pgxmock.PgxPoolIface) error {
 }
 
 func establishMockForColumns(mock pgxmock.PgxPoolIface) error {
-	mock.ExpectQuery(`SELECT`).
+	mock.ExpectQuery(`SELECT column_name, data_type, ordinal_position, table_schema, table_name FROM information_schema.columns`).
 		WithArgs("folio_users", "users", "data").
 		WillReturnRows(pgxmock.NewRows([]string{"column_name", "data_type", "ordinal_position", "table_schema", "table_name"}).
 			AddRow("id", "uuid", "6", "folio_users", "users").
+			AddRow("user", "string", "7", "folio_users", "users").
 			AddRow("creation_date", "timestamp without time zone", "8", "folio_users", "users"))
 	return nil
 }
 
 func establishMockForQuery(mock pgxmock.PgxPoolIface) error {
-	mock.ExpectQuery(`SELECT \* FROM "folio"."users"`).
+	mock.ExpectQuery(`SELECT \* FROM "folio_users"."users"`).
 		WillReturnRows(pgxmock.NewRows([]string{"name", "email"}).
 			AddRow("mike", "mike@example.com").
 			AddRow("fiona", "fiona@example.com"))
@@ -170,7 +186,7 @@ func establishMockForQuery(mock pgxmock.PgxPoolIface) error {
 }
 
 func establishMockForEmptyFilterQuery(mock pgxmock.PgxPoolIface) error {
-	mock.ExpectQuery(`SELECT \* FROM "folio"."users"`).
+	mock.ExpectQuery(`SELECT \* FROM "folio_users"."users"`).
 		WillReturnError(errors.New(`ERROR: syntax error at or near "=" (SQLSTATE 42601)`))
 	return nil
 }
