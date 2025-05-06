@@ -306,7 +306,7 @@ func Test_reportingHandlers(t *testing.T) {
 				return establishMockForQuery(data.(pgxmock.PgxPoolIface))
 			},
 			function: handleQuery,
-			expected: `\[{"email":"mike@example.com","name":"mike"},{"email":"fiona@example.com","name":"fiona"}\]`,
+			expected: `\[{"name":"mike","email":"mike@example.com"},{"name":"fiona","email":"fiona@example.com"}\]`,
 		},
 		{
 			// This test doesn't really test anything except my ability to mock PGX errors

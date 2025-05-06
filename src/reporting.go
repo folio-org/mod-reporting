@@ -328,8 +328,8 @@ type reportQuery struct {
 }
 
 type reportResponse struct {
-	TotalRecords int              `json:"totalRecords"`
-	Records      []map[string]any `json:"records"`
+	TotalRecords int          `json:"totalRecords"`
+	Records      []OrderedMap `json:"records"`
 }
 
 func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
@@ -593,15 +593,21 @@ func makeFunctionCall(sql string, params map[string]string, limit int) (string, 
 	return cmd, orderedParams, nil
 }
 
-func collectAndFixRows(rows pgx.Rows) ([]map[string]any, error) {
+func collectAndFixRows(rows pgx.Rows) ([]OrderedMap, error) {
 	records, err := pgx.CollectRows(rows, pgx.RowToMap)
 	// fmt.Printf("rows: %+v\n", rows.FieldDescriptions())
 	if err != nil {
 		return nil, fmt.Errorf("could not collect query result data: %w", err)
 	}
+	fd := rows.FieldDescriptions()
+	fieldOrder := make([]string, len(fd))
+	for i, entry := range fd {
+		fieldOrder[i] = entry.Name
+	}
 
-	// Fix up types
-	for _, rec := range records {
+	// Fix up types and translate into ordered maps
+	result := make([]OrderedMap, len(records))
+	for i, rec := range records {
 		for key, val := range rec {
 			switch v := val.(type) {
 			case [16]uint8:
@@ -611,9 +617,11 @@ func collectAndFixRows(rows pgx.Rows) ([]map[string]any, error) {
 				// Nothing to do
 			}
 		}
+
+		result[i] = MapToOrderedMap(rec, fieldOrder)
 	}
 
-	return records, nil
+	return result, nil
 }
 
 func sendJSON(w http.ResponseWriter, data any, caption string) error {

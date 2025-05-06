@@ -108,7 +108,7 @@ func runTests(t *testing.T, baseUrl string, session *ModReportingSession) {
 				return establishMockForQuery(data.(pgxmock.PgxPoolIface))
 			},
 			status:   200,
-			expected: `\[{"email":"mike@example.com","name":"mike"},{"email":"fiona@example.com","name":"fiona"}\]`,
+			expected: `\[{"name":"mike","email":"mike@example.com"},{"name":"fiona","email":"fiona@example.com"}\]`,
 		},
 		{
 			name: "report with parameters",
