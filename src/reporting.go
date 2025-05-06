@@ -593,7 +593,7 @@ func makeFunctionCall(sql string, params map[string]string, limit int) (string, 
 	return cmd, orderedParams, nil
 }
 
-func collectAndFixRows(rows pgx.Rows) ([]OrderedMap, error) {
+func  collectAndFixRows(rows pgx.Rows) ([]OrderedMap, error) {
 	records, err := pgx.CollectRows(rows, pgx.RowToMap)
 	// fmt.Printf("rows: %+v\n", rows.FieldDescriptions())
 	if err != nil {
