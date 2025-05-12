@@ -13,13 +13,13 @@ type TestCase struct {
 
 func Test_orderedMap(t *testing.T) {
 	testCases := []TestCase{
-		TestCase{
+		{
 			"empty map",
 			map[string]interface{}{},
 			[]string{},
 			`{}`,
 		},
-		TestCase{
+		{
 			"single-element map with no keys in order",
 			map[string]interface{}{
 				"foo": "bar",
@@ -27,7 +27,7 @@ func Test_orderedMap(t *testing.T) {
 			[]string{},
 			`{}`,
 		},
-		TestCase{
+		{
 			"single-element map with key not included in order",
 			map[string]interface{}{
 				"foo": "chicken",
@@ -35,7 +35,7 @@ func Test_orderedMap(t *testing.T) {
 			[]string{"bar", "baz"},
 			`{}`,
 		},
-		TestCase{
+		{
 			"single-element map with key included in order",
 			map[string]interface{}{
 				"foo": "chicken",
@@ -43,7 +43,7 @@ func Test_orderedMap(t *testing.T) {
 			[]string{"foo"},
 			`{"foo":"chicken"}`,
 		},
-		TestCase{
+		{
 			"single-element map with numeric value",
 			map[string]interface{}{
 				"foo": 42,
@@ -51,7 +51,7 @@ func Test_orderedMap(t *testing.T) {
 			[]string{"foo"},
 			`{"foo":42}`,
 		},
-		TestCase{
+		{
 			"single-element map with boolean value",
 			map[string]interface{}{
 				"foo": false,
@@ -59,7 +59,7 @@ func Test_orderedMap(t *testing.T) {
 			[]string{"foo"},
 			`{"foo":false}`,
 		},
-		TestCase{
+		{
 			"single-element map with array value",
 			map[string]interface{}{
 				"foo": []int{42, 12, 99},
@@ -67,7 +67,7 @@ func Test_orderedMap(t *testing.T) {
 			[]string{"foo"},
 			`{"foo":[42,12,99]}`,
 		},
-		TestCase{
+		{
 			"two-element map with keys in order",
 			map[string]interface{}{
 				"foo": "chicken",
@@ -76,7 +76,7 @@ func Test_orderedMap(t *testing.T) {
 			[]string{"foo", "bar"},
 			`{"foo":"chicken","bar":"badger"}`,
 		},
-		TestCase{
+		{
 			"two-element map with keys out of order",
 			map[string]interface{}{
 				"foo": "chicken",
@@ -85,7 +85,7 @@ func Test_orderedMap(t *testing.T) {
 			[]string{"bar", "foo"},
 			`{"bar":"badger","foo":"chicken"}`,
 		},
-		TestCase{
+		{
 			"five-element map with keys out of order",
 			map[string]interface{}{
 				"foo":    "chicken",
