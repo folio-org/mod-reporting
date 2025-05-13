@@ -7,6 +7,7 @@
 * Support validation of report URLs by reference to a whitelist of regexps in the configuration file. Fixes MODREP-4.
 * In JSON queries, ignore order-by elements when the fieldname is empty. Fixes MODREP-28.
 * When returning a report or JSON query response, the fields of the results are ordered as specified in query. Fixes MODREP-31.
+* Add `MikeTaylor`'s GitLab repositories to the default set of whitelist regexps. Fixes MODREP-32.
 
 ## [1.3.1](https://github.com/folio-org/mod-reporting/tree/v1.3.1) (2025-03-12)
 

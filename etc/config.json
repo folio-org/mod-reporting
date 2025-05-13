@@ -9,7 +9,7 @@
     "port": 12369
   },
   "reportUrlWhitelist": [
-    "^https://gitlab.com/MikeTaylor/metadb-queries/",
+    "^https://gitlab.com/api/v4/projects/MikeTaylor%2F",
     "^https://raw.githubusercontent.com/metadb-project/"
   ]
 }
