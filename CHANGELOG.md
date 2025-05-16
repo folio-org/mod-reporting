@@ -5,7 +5,7 @@
 * Smaller base images in Dockerfile. Fixes MODREP-24.
 * Upgrade golang from 1.23 to 1.24. Fixes MODREP-30.
 * Support validation of report URLs by reference to a whitelist of regexps in the configuration file. Fixes MODREP-4.
-* Politely rekect invalid UUID values. Fixes MODREP-29.
+* Politely reject invalid UUID values. Fixes MODREP-29.
 * In JSON queries, ignore order-by elements when the fieldname is empty. Fixes MODREP-28.
 * When returning a report or JSON query response, the fields of the results are ordered as specified in query. Fixes MODREP-31.
 * Add `MikeTaylor`'s GitLab repositories to the default set of whitelist regexps. Fixes MODREP-32.
