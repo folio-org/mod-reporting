@@ -1,6 +1,6 @@
 # Change history for mod-reporting
 
-## [1.4.1](https://github.com/folio-org/mod-reporting/tree/v1.4.1) (IN PROGRESS)
+## [1.4.1](https://github.com/folio-org/mod-reporting/tree/v1.4.1) (2025-06-03)
 
 * URL-encode double quotes to `%22` sequences in CQL queries to mod-settings. Fixes MODREP-35.
 
