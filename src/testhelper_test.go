@@ -48,7 +48,7 @@ type testT struct {
 func MakeMockHTTPServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.URL.Path == "/settings/entries" &&
-			req.URL.RawQuery == `query=scope=="ui-ldp.admin"` {
+			req.URL.RawQuery == "query=scope==%22ui-ldp.admin%22" {
 			_, _ = w.Write([]byte(`
 			  {
 			    "items": [
@@ -66,7 +66,7 @@ func MakeMockHTTPServer() *httptest.Server {
 			  }
 			`))
 		} else if req.URL.Path == "/settings/entries" &&
-			req.URL.RawQuery == `query=scope=="ui-ldp.admin"+and+key=="dbinfo"` {
+			req.URL.RawQuery == "query=scope==%22ui-ldp.admin%22+and+key==%22dbinfo%22" {
 			// XXX note that this specific value is also required by the getDbInfo test
 			_, _ = w.Write([]byte(`
 			  {
@@ -89,7 +89,7 @@ func MakeMockHTTPServer() *httptest.Server {
 			  }
 			`))
 		} else if req.URL.Path == "/settings/entries" &&
-			req.URL.RawQuery == `query=scope=="ui-ldp.admin"+and+key=="non-string"` {
+			req.URL.RawQuery == "query=scope==%22ui-ldp.admin%22+and+key==%22non-string%22" {
 			_, _ = w.Write([]byte(`
 			  {
 			    "items": [
@@ -107,7 +107,7 @@ func MakeMockHTTPServer() *httptest.Server {
 			  }
 			`))
 		} else if req.URL.Path == "/settings/entries" &&
-			req.URL.RawQuery == `query=scope=="ui-ldp.admin"+and+key=="bad"` {
+			req.URL.RawQuery == "query=scope==%22ui-ldp.admin%22+and+key==%22bad%22" {
 			_, _ = w.Write([]byte("some bit of text"))
 		} else if req.URL.Path == "/settings/entries" {
 			// Searching for some other setting, e.g. "score" before trying to write to it

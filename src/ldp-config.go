@@ -99,7 +99,7 @@ func settingsItemToConfigItem(item settingsItemGeneral, tenant string) (configIt
 
 // The /ldp/config endpoint only supports GET, with no URL parameters
 func handleConfig(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
-	bytes, err := fetchWithToken0(req, session.folioSession, `settings/entries?query=scope=="ui-ldp.admin"`)
+	bytes, err := fetchWithToken0(req, session.folioSession, "settings/entries?query=scope==%22ui-ldp.admin%22")
 	if err != nil {
 		return fmt.Errorf("could not fetch from mod-settings: %w", err)
 	}
@@ -146,7 +146,7 @@ func handleConfigKey(w http.ResponseWriter, req *http.Request, session *ModRepor
 	}
 
 	// Assume GET
-	path := `settings/entries?query=scope=="ui-ldp.admin"+and+key=="` + key + `"`
+	path := "settings/entries?query=scope==%22ui-ldp.admin%22+and+key==%22" + key + "%22"
 	bytes, err = fetchWithToken0(req, session.folioSession, path)
 	if err != nil {
 		return fmt.Errorf("could not read from mod-settings: %w", err)
@@ -196,7 +196,7 @@ func writeConfigKey(w http.ResponseWriter, req *http.Request, session *ModReport
 	// we're creating a new key from if we're replacing an
 	// existing one, so we need first to search for an existing
 	// record
-	path := `settings/entries?query=scope=="ui-ldp.admin"+and+key=="` + key + `"`
+	path := "settings/entries?query=scope==%22ui-ldp.admin%22+and+key==%22" + key + "%22"
 	bytes, err = fetchWithToken0(req, session.folioSession, path)
 	if err != nil {
 		return fmt.Errorf("could not read from mod-settings: %w", err)
