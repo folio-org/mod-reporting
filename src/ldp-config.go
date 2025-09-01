@@ -243,6 +243,6 @@ func writeConfigKey(w http.ResponseWriter, req *http.Request, session *ModReport
 	if err != nil {
 		return fmt.Errorf("could not serialize JSON for response: %w", err)
 	}
-	_, err = w.Write(bytes)
-	return err
+	_, _ = w.Write(bytes)
+	return nil
 }

@@ -631,6 +631,8 @@ func sendJSON(w http.ResponseWriter, data any, caption string) error {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	_, err = w.Write(bytes)
-	return err
+
+	// If w.write fails there is no way to report this to the client: see MODREP-37.
+	_, _ = w.Write(bytes)
+	return nil
 }
