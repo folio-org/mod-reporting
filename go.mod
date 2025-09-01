@@ -1,6 +1,6 @@
 module github.com/folio-org/mod-reporting
 
-go 1.24.2  // also update the version in Dockerfile
+go 1.24.6  // also update the version in Dockerfile
 
 require (
 	github.com/MikeTaylor/catlogger v0.0.2

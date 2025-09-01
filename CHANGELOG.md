@@ -3,6 +3,7 @@
 ## IN PROGRESS
 
 * When writing an HTTP response fails, do not attempt to inform the client by writing the HTTP response again. Avoids "superfluous response.WriteHeader call" warning. Fixes MODREP-37.
+* Upgrade to Go v1.24.6 to get patches for some vulnerabilities. Fixes MODREP-41.
 
 ## [1.4.1](https://github.com/folio-org/mod-reporting/tree/v1.4.1) (2025-06-03)
 
