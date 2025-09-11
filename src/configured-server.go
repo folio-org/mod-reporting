@@ -13,7 +13,7 @@ func MakeConfiguredServer(configFile string, httpRoot string) (*ModReportingServ
 
 	cl := cfg.Logging
 	logger := catlogger.MakeLogger(cl.Categories, cl.Prefix, cl.Timestamp)
-	logger.AddTransformation(regexp.MustCompile(`\\"pass\\":\\"[^"]*\\"`), `\"pass\":\"********\"`);
+	logger.AddTransformation(regexp.MustCompile(`\\"pass\\":\\"[^"]*\\"`), `\"pass\":\"********\"`)
 	logger.Log("config", fmt.Sprintf("%+v", cfg))
 
 	server := MakeModReportingServer(cfg, logger, httpRoot)
