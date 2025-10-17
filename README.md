@@ -111,6 +111,7 @@ The following categories of logging information may be emitted, depending on how
 
 Access to the FOLIO database is performed using [the foliogo client library](https://github.com/indexdata/foliogo) which also uses categorical logger. See its documentation for information on the categories `service`, `session`, `op`, `auth`, `curl`, `status` and `response`.
 
+**NOTE.** The `curl` logging category shows complete `curl` commands that can be run from the command-line, including live authentication tokens. For this reason it should be used only as a debugging aid, and _never_ included when running in production.
 
 ### FOLIO services and reporting databases
 
