@@ -124,6 +124,12 @@ func Test_makeSql(t *testing.T) {
 			expectedArgs: []string{},
 		},
 		{
+			name:         "query with limit expressed a string",
+			sendData:     `{ "tables": [{ "schema": "folio_users", "tableName": "users", "limit": "100" }] }`,
+			expected:     `SELECT * FROM "folio_users"."users" LIMIT 100`,
+			expectedArgs: []string{},
+		},
+		{
 			name:         "make me one with everything",
 			sendData:     `{ "tables": [{"limit": 11,"schema": "folio_users","orderBy": [{"direction": "asc","nulls": "end","key": "creation_date"},{"direction": "asc","nulls": "start","key": "__id"}],"showColumns": ["id","creation_date","hrid","title","source"],"columnFilters": [{"key": "creation_date","op": ">=","value": "2022-06-09T19:01:33.757+00:00"},{"key": "id","op": "<>","value": "` + uuid + `"}],"tableName": "users"}]}`,
 			expected:     `SELECT id, creation_date, hrid, title, source FROM "folio_users"."users" WHERE creation_date >= $1 AND id <> $2 ORDER BY creation_date asc NULLS LAST, __id asc NULLS FIRST LIMIT 11`,
@@ -388,6 +394,19 @@ func Test_reportingHandlers(t *testing.T) {
 			sendData: `{ "url": "` + baseUrl + `/reports/loans.sql",
 				     "params": { "end_date": "2023-03-18T00:00:00.000Z" },
 				     "limit": 100
+				   }`,
+			establishMock: func(data interface{}) error {
+				return establishMockForReport(data.(pgxmock.PgxPoolIface))
+			},
+			function: handleReport,
+			expected: `{"totalRecords":2,"records":\[{"id":"5a9a92ca-ba05-d72d-f84c-31921f1f7e4d","num":29},{"id":"456","num":3}\]}`,
+		},
+		{
+			name: "report with limit expressed as string",
+			path: "/ldp/db/reports",
+			sendData: `{ "url": "` + baseUrl + `/reports/loans.sql",
+				     "params": { "end_date": "2023-03-18T00:00:00.000Z" },
+				     "limit": "101"
 				   }`,
 			establishMock: func(data interface{}) error {
 				return establishMockForReport(data.(pgxmock.PgxPoolIface))
