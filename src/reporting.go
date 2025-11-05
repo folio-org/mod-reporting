@@ -3,6 +3,7 @@ package main
 import "context"
 import "io"
 import "strings"
+import bytesLib "bytes"
 import "time"
 import "fmt"
 import "regexp"
@@ -324,7 +325,7 @@ func makeOrder(orders []queryOrder) string {
 type reportQuery struct {
 	Url    string            `json:"url"`
 	Params map[string]string `json:"params"`
-	Limit  int               `json:"limit"`
+	Limit  json.Number       `json:"limit"`
 }
 
 type reportResponse struct {
@@ -343,10 +344,14 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 		return fmt.Errorf("could not read HTTP request body: %w", err)
 	}
 	var query reportQuery
-	err = json.Unmarshal(bytes, &query)
+	dec := json.NewDecoder(bytesLib.NewReader(bytes))
+	dec.UseNumber()
+	err = dec.Decode(&query)
 	if err != nil {
 		return fmt.Errorf("could not deserialize JSON from body: %w", err)
 	}
+	limit64, _ := query.Limit.Int64()
+	limit := int(limit64)
 
 	err = validateUrl(session, query.Url)
 	if err != nil {
@@ -379,7 +384,7 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 		sql = "SET search_path = local, public;\n" + sql
 	}
 
-	cmd, params, err := makeFunctionCall(sql, query.Params, query.Limit)
+	cmd, params, err := makeFunctionCall(sql, query.Params, limit)
 	if err != nil {
 		return fmt.Errorf("could not construct SQL function call: %w", err)
 	}
