@@ -156,7 +156,7 @@ type queryTable struct {
 	Filters []queryFilter `json:"columnFilters"`
 	Columns []string      `json:"showColumns"`
 	Order   []queryOrder  `json:"orderBy"`
-	Limit   int           `json:"limit"`
+	Limit   json.Number   `json:"limit"`
 }
 
 type jsonQuery struct {
@@ -174,7 +174,9 @@ func handleQuery(w http.ResponseWriter, req *http.Request, session *ModReporting
 		return fmt.Errorf("could not read HTTP request body: %w", err)
 	}
 	var query jsonQuery
-	err = json.Unmarshal(bytes, &query)
+	dec := json.NewDecoder(bytesLib.NewReader(bytes))
+	dec.UseNumber()
+	err = dec.Decode(&query)
 	if err != nil {
 		return fmt.Errorf("could not deserialize JSON from body: %w", err)
 	}
@@ -222,8 +224,11 @@ func makeSql(query jsonQuery, session *ModReportingSession, token string) (strin
 	if orderString != "" {
 		sql += " ORDER BY " + orderString
 	}
-	if qt.Limit != 0 {
-		sql += fmt.Sprintf(" LIMIT %d", qt.Limit)
+
+	limit64, _ := qt.Limit.Int64()
+	limit := int(limit64)
+	if limit != 0 {
+		sql += fmt.Sprintf(" LIMIT %d", limit)
 	}
 
 	return sql, params, nil
