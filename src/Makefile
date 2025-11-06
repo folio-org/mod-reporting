@@ -11,6 +11,10 @@ run: $(TARGET)
 run-local: $(TARGET)
 	cd ..; env LOGCAT=listen,path,db,error,sql,op,curl,status,response OKAPI_URL=https://folio-snapshot-okapi.dev.folio.org OKAPI_TENANT=diku OKAPI_USER=diku_admin src/$(TARGET) etc/config.json
 
+# After upgrading Go, two external linting tools also need upgrading:
+#	go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest
+#	go install honnef.co/go/tools/cmd/staticcheck@latest
+#
 lint:
 	-go vet ./...
 	-go vet -vettool=/Users/mike/go/bin/shadow ./...

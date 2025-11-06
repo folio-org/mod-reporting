@@ -8,6 +8,7 @@
 * Remove `LOGCAT` environment-variable setting from `Dockerfile`; add less verbose/more secure setting to launch descriptor. Fixes MODREP-43.
 * Disable the report-URL whitelist in the example config. Fixes MODREP-46.
 * Accept `limit` parameter (for JSON queries and reports) as either string or number. Fixes MODREP-45.
+* Upgrade Go version to 1.24.10 to avoid vulnerabilities in earlier versions' libraries. Fixes MODREP-47.
 
 ## [1.4.1](https://github.com/folio-org/mod-reporting/tree/v1.4.1) (2025-06-03)
 
