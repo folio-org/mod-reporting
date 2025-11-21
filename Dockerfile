@@ -28,7 +28,9 @@ COPY --from=build /app/mod-reporting /app/config.json ./
 EXPOSE 12369
 
 # Run
-ENV LOGCAT=listen,op,curl,status,response,db,path
+
+# This is not needed in production, as a value will be injected from the ochestration system
+#ENV LOGCAT=listen,op,curl,status,response,db,path,error
 
 # These are not needed in production, as requests will come from Okapi with authentication tokens
 #ENV OKAPI_URL=https://folio-snapshot-okapi.dev.folio.org

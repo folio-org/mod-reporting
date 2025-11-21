@@ -47,7 +47,7 @@ $ ldp-config-tool.js set < config-dump.json
 
 ### Setting directly into mod-settings
 
-Sometimes in practice it's necessaey to copy mod-ldp configuration into mod-settings before mod-reporting is available to write through. So there is also a new `write-settings` mode for this script which will insert directly into mod-settings.
+Sometimes in practice it's necessary to copy mod-ldp configuration into mod-settings before mod-reporting is available to write through. So there is also a new `write-settings` mode for this script which will insert directly into mod-settings.
 
 
 <!--

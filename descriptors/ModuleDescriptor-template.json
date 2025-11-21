@@ -179,6 +179,9 @@
         "Memory": 100000000,
         "PortBindings": { "12369/tcp": [ { "HostPort": "%p" } ] }
       }
-    }
+    },
+    "env": [
+      { "name": "LOGCAT", "value": "listen,path,op,status,db,error" }
+    ]
   }
 }

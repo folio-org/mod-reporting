@@ -8,7 +8,7 @@
     "host": "0.0.0.0",
     "port": 12369
   },
-  "reportUrlWhitelist": [
+  "DISABLED__reportUrlWhitelist": [
     "^https://gitlab.com/api/v4/projects/MikeTaylor%2F",
     "^https://raw.githubusercontent.com/metadb-project/"
   ]

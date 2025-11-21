@@ -92,7 +92,7 @@ Three top-level stanzas are supported:
 * `listen` specifies where the running server should listen for connections:
   * `host` is an IP address or DNS-resolvable hostname. `0.0.0.0` (all interfaces) should usually be used
   * `port` is an IP port number
-* `reportUrlWhitelist` is an optional list of regular expressions. If this is specified, then only report URLs that match one of these regular expressions are accepted.
+* `reportUrlWhitelist` is an optional list of regular expressions. If this is specified, then only report URLs that match one of these regular expressions are accepted. **Note.** In [the sample configuration file](etc/config.json), the whitelist is disabled: for deployments that want to apply this filtering, it is the responsibility of their administrators to modify their configuration accordingly.
 
 The port specified in the `listen` stanza can be overridden at run-time by setting the `SERVER_PORT` environment variable. This is useful when invoking the service from a container whose contents (i.e. the configuration file) cannot easily be modified, but whose environment can be specified.
 
@@ -111,6 +111,7 @@ The following categories of logging information may be emitted, depending on how
 
 Access to the FOLIO database is performed using [the foliogo client library](https://github.com/indexdata/foliogo) which also uses categorical logger. See its documentation for information on the categories `service`, `session`, `op`, `auth`, `curl`, `status` and `response`.
 
+**NOTE.** The `curl` logging category shows complete `curl` commands that can be run from the command-line, including live authentication tokens. For this reason it should be used only as a debugging aid, and _never_ included when running in production.
 
 ### FOLIO services and reporting databases
 
