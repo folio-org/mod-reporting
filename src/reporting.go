@@ -406,6 +406,12 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 		return fmt.Errorf("could not register SQL function: %w", err)
 	}
 
+	setLimitString := fmt.Sprintf("SET statement_timeout TO %d", session.server.config.QueryTimeout*1000)
+	_, err = tx.Exec(context.Background(), setLimitString)
+	if err != nil {
+		return fmt.Errorf("could not set statement timeout: %w", err)
+	}
+
 	rows, err := tx.Query(context.Background(), cmd, params...)
 	if err != nil {
 		return fmt.Errorf("could not execute SQL from report: %w", err)

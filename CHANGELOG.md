@@ -1,5 +1,9 @@
 # Change history for mod-reporting
 
+## 1.5.0 (IN PROGRESS)
+
+* Postgres query timeout is configurable both as `queryTimeout` in the config file and (overriding this) in the `MOD_REPORTING_QUERY_TIMEOUT` environment variable. Defaults to 60 seconds if neither is specified. Also, fixes a bug where reports running for more than 30 seconds would result in the connection to the client being silently dropped. Fixes MODREP-42.
+
 ## [1.4.2](https://github.com/folio-org/mod-reporting/tree/v1.4.2) (2025-11-21)
 
 * When writing an HTTP response fails, do not attempt to inform the client by writing the HTTP response again. Avoids "superfluous response.WriteHeader call" warning. Fixes MODREP-37.

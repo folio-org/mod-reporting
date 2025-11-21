@@ -195,6 +195,8 @@ func establishMockForReport(mock pgxmock.PgxPoolIface) error {
 	mock.ExpectBegin()
 	mock.ExpectExec("--metadb:function count_loans").
 		WillReturnResult(pgxmock.NewResult("CREATE FUNCTION", 1))
+	mock.ExpectExec(`SET statement_timeout TO 60000`).
+		WillReturnResult(pgxmock.NewResult("SET", 1))
 	id := [16]uint8{90, 154, 146, 202, 186, 5, 215, 45, 248, 76, 49, 146, 31, 31, 126, 77}
 	mock.ExpectQuery(`SELECT \* FROM count_loans\(end_date => \$1\)`).
 		WithArgs("2023-03-18T00:00:00.000Z").

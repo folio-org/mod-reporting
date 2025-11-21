@@ -38,8 +38,9 @@ func MakeModReportingServer(cfg *config, logger *catlogger.Logger, root string) 
 		logger: logger,
 		root:   root,
 		server: http.Server{
-			ReadTimeout:  30 * time.Second,
-			WriteTimeout: 30 * time.Second,
+			// Set timeouts a minute longer than those at Postgres level to allow for overhead
+			ReadTimeout:  time.Duration(cfg.QueryTimeout+60) * time.Second,
+			WriteTimeout: time.Duration(cfg.QueryTimeout+60) * time.Second,
 			Handler:      mux,
 		},
 		sessions: map[string]*ModReportingSession{},

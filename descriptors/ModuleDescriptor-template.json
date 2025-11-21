@@ -181,7 +181,8 @@
       }
     },
     "env": [
-      { "name": "LOGCAT", "value": "listen,path,op,status,db,error" }
+      { "name": "LOGCAT", "value": "listen,path,op,status,db,error" },
+      { "name": "MOD_REPORTING_QUERY_TIMEOUT", "value": "300" }
     ]
   }
 }

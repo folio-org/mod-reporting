@@ -1,6 +1,6 @@
 # mod-reporting
 
-Copyright (C) 2023-2024 The Open Library Foundation
+Copyright (C) 2023-2025 The Open Library Foundation
 
 This software is distributed under the terms of the Apache License, Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
 
@@ -77,6 +77,7 @@ The configuration file is written in JSON. An example can be found in [`etc/conf
     "host": "0.0.0.0",
     "port": 12369
   },
+  "queryTimeout": 120,
   "reportUrlWhitelist": [
     "^https://gitlab.com/MikeTaylor/metadb-queries/",
     "^https://raw.githubusercontent.com/metadb-project/"
@@ -84,7 +85,7 @@ The configuration file is written in JSON. An example can be found in [`etc/conf
 }
 ```
 
-Three top-level stanzas are supported:
+Four top-level entries are supported:
 * `logging` specifies how the system's [categorical logger](https://github.com/MikeTaylor/catlogger) should be configured:
   * `categories` is a comma-separated list of logging categories for which output should be emitted: see [below](#logging)
   * `prefix` is an optional string which will be emitted at the start of each logging line. This can help to differentiate logging output from other outputs.
@@ -92,10 +93,12 @@ Three top-level stanzas are supported:
 * `listen` specifies where the running server should listen for connections:
   * `host` is an IP address or DNS-resolvable hostname. `0.0.0.0` (all interfaces) should usually be used
   * `port` is an IP port number
+* `queryTimeout` specifies how long, in seconds, mod-reporting should allow Postgres to run any query. Running longer than this will result in a timeout error. Defaults to 60 seconds if not specified. See also `MOD_REPORTING_QUERY_TIMEOUT` below.
 * `reportUrlWhitelist` is an optional list of regular expressions. If this is specified, then only report URLs that match one of these regular expressions are accepted. **Note.** In [the sample configuration file](etc/config.json), the whitelist is disabled: for deployments that want to apply this filtering, it is the responsibility of their administrators to modify their configuration accordingly.
 
 The port specified in the `listen` stanza can be overridden at run-time by setting the `SERVER_PORT` environment variable. This is useful when invoking the service from a container whose contents (i.e. the configuration file) cannot easily be modified, but whose environment can be specified.
 
+The timeout length specified by the `queryTimeout` entry in the configuration file can be overridden at run-time by setting the `MOD_REPORTING_QUERY_TIMEOUT` environment variable.
 
 ### Logging
 

@@ -29,6 +29,7 @@ func Test_readConfig(t *testing.T) {
 				Host: "0.0.0.0",
 				Port: 12369,
 			},
+			QueryTimeout: 60,
 		}))
 	})
 }
