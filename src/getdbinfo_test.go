@@ -9,7 +9,9 @@ func Test_getDbInfo(t *testing.T) {
 	defer ts.Close()
 	baseUrl := ts.URL
 
-	server := MakeModReportingServer(nil, nil, "")
+	cfg, err := readConfig("../etc/silent.json");
+	assert.Nil(t, err)
+	server := MakeModReportingServer(cfg, nil, "")
 	session, err := NewModReportingSession(server, baseUrl, "dummyTenant", "dummyToken")
 	assert.Nil(t, err)
 

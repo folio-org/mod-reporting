@@ -3,6 +3,7 @@ package main
 import "os"
 import "io"
 import "encoding/json"
+import "strconv"
 
 type loggingConfig struct {
 	Categories string `json:"categories"`
@@ -20,6 +21,7 @@ type reportUrlWhitelistConfig []string
 type config struct {
 	Logging            loggingConfig            `json:"logging"`
 	Listen             listenConfig             `json:"listen"`
+	QueryTimeout       int                      `json:"queryTimeout"`
 	ReportUrlWhitelist reportUrlWhitelistConfig `json:"reportUrlWhitelist"`
 }
 
@@ -36,5 +38,13 @@ func readConfig(name string) (*config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	queryTimeoutString := os.Getenv("MOD_REPORTING_QUERY_TIMEOUT")
+	if queryTimeoutString != "" {
+		cfg.QueryTimeout, _ = strconv.Atoi(queryTimeoutString)
+	} else if cfg.QueryTimeout == 0 {
+		cfg.QueryTimeout = 60
+	}
+
 	return &cfg, nil
 }

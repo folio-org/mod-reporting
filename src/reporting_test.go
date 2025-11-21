@@ -378,6 +378,8 @@ func Test_reportingHandlers(t *testing.T) {
 				mock.ExpectBegin()
 				mock.ExpectExec("--metadb:function count_loans").
 					WillReturnResult(pgxmock.NewResult("CREATE FUNCTION", 1))
+				mock.ExpectExec(`SET statement_timeout TO 60000`).
+					WillReturnResult(pgxmock.NewResult("SET", 1))
 				mock.ExpectQuery(`SELECT \* FROM count_loans`).
 					WillReturnRows(pgxmock.NewRows([]string{"id", "num"}).
 						AddRow("123", 42).
