@@ -14,8 +14,15 @@ on:
 
 jobs:
   go-lint:
-    uses: folio-org/.github/.github/workflows/go-lint.yml@master
-    with:
-      errcheck-excludes-file: 'src/.errcheck-exclude'
-      golangci-config-file: 'src/.golangci.yml'
+    steps:
+      - name: Set up Go v1.25
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Actually run the linter
+        uses: folio-org/.github/.github/workflows/go-lint.yml@master
+        with:
+          errcheck-excludes-file: 'src/.errcheck-exclude'
+          golangci-config-file: 'src/.golangci.yml'
 
