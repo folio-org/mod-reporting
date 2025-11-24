@@ -3,7 +3,7 @@
 ## 1.5.0 (IN PROGRESS)
 
 * Postgres query timeout is configurable both as `queryTimeout` in the config file and (overriding this) in the `MOD_REPORTING_QUERY_TIMEOUT` environment variable. Defaults to 60 seconds if neither is specified. Also, fixes a bug where reports running for more than 30 seconds would result in the connection to the client being silently dropped. Fixes MODREP-42.
-* Upgrade to Go version 1.25 (specifically 1.25.4). Fixes MODREP-44.
+* Upgrade to Go version 1.25 (specifically, v1.25.4). Fixes MODREP-44.
 
 ## [1.4.2](https://github.com/folio-org/mod-reporting/tree/v1.4.2) (2025-11-21)
 
