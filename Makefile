@@ -8,6 +8,9 @@ target/ModuleDescriptor.json:
 target/mod-reporting:
 	(cd src; make)
 
+lint:
+	(cd src; make lint)
+
 test:
 	(cd src; make test)
 

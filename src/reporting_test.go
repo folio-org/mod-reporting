@@ -267,14 +267,14 @@ func Test_reportingHandlers(t *testing.T) {
 			path:     "/ldp/db/query",
 			sendData: `{ "tables": 42 }`,
 			function: handleQuery,
-			errorstr: "cannot unmarshal number",
+			errorstr: "/cannot unmarshal (JSON )?number/",
 		},
 		{
 			name:     "fail JSON query where tables is string",
 			path:     "/ldp/db/query",
 			sendData: `{ "tables": "water" }`,
 			function: handleQuery,
-			errorstr: "cannot unmarshal string",
+			errorstr: "/cannot unmarshal (JSON )?string/",
 		},
 		{
 			name:     "fail JSON query with 0 tables",
@@ -295,14 +295,14 @@ func Test_reportingHandlers(t *testing.T) {
 			path:     "/ldp/db/query",
 			sendData: `{ "tables": [42] }`,
 			function: handleQuery,
-			errorstr: "cannot unmarshal number",
+			errorstr: "/cannot unmarshal (JSON )?number/",
 		},
 		{
 			name:     "fail JSON query where table is string",
 			path:     "/ldp/db/query",
 			sendData: `{ "tables": ["water"] }`,
 			function: handleQuery,
-			errorstr: "cannot unmarshal string",
+			errorstr: "/cannot unmarshal (JSON )?string/",
 		},
 		{
 			name:     "simple query with dummy results",
@@ -532,6 +532,9 @@ func Test_reportingHandlers(t *testing.T) {
 				body, _ := io.ReadAll(resp.Body)
 				assert.Regexp(t, test.expected, string(body))
 				assert.Nil(t, mock.ExpectationsWereMet(), "unfulfilled expections")
+			} else if strings.HasPrefix(test.errorstr, "/") && strings.HasSuffix(test.errorstr, "/") {
+				regexpstr := test.errorstr[1 : len(test.errorstr)-1]
+				assert.Regexp(t, regexpstr, err)
 			} else {
 				assert.ErrorContains(t, err, test.errorstr)
 			}
