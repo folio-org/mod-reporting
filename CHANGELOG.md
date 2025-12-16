@@ -1,5 +1,9 @@
 # Change history for mod-reporting
 
+## [1.6.0](https://github.com/folio-org/mod-reporting/tree/v1.6.0) (IN PROGRESS)
+
+* Extend `/ldp/db/tables` SQL query so that the response includes tables in the `reshare_derived` schema. Fixes MODREP-49.
+
 ## [1.5.0](https://github.com/folio-org/mod-reporting/tree/v1.5.0) (2025-11-25)
 
 * Postgres query timeout is configurable both as `queryTimeout` in the config file and (overriding this) in the `MOD_REPORTING_QUERY_TIMEOUT` environment variable. Defaults to 60 seconds if neither is specified. Also, fixes a bug where reports running for more than 30 seconds would result in the connection to the client being silently dropped. Fixes MODREP-42.
