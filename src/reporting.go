@@ -58,11 +58,11 @@ func fetchTables(dbConn PgxIface, isMetaDB bool) ([]dbTable, error) {
 	if isMetaDB {
 		query = `SELECT schema_name, table_name FROM metadb.base_table
 			 UNION
-			 SELECT 'folio_derived', table_name
+			 SELECT schema_name, table_name
 			     FROM metadb.table_update t
 			         JOIN pg_class c ON c.relname=t.table_name
 			         JOIN pg_namespace n ON n.oid=c.relnamespace AND n.nspname=t.schema_name
-			     WHERE schema_name='folio_derived'`
+			     WHERE schema_name='folio_derived' OR schema_name='reshare_derived'`
 	} else {
 		query = "SELECT table_name, table_schema as schema_name FROM information_schema.tables WHERE table_schema IN ('local', 'public', 'folio_reporting')"
 	}
