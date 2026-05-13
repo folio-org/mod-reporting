@@ -399,7 +399,10 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 	if err != nil {
 		return fmt.Errorf("could not open transaction: %w", err)
 	}
-	defer tx.Rollback(context.Background())
+	defer func() {
+		// Explicitly discard return value so golangci-lint understands the intent
+		_ = tx.Rollback(context.Background())
+	}()
 
 	_, err = tx.Exec(context.Background(), sql)
 	if err != nil {
