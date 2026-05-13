@@ -26,7 +26,7 @@ type config struct {
 }
 
 func readConfig(name string) (*config, error) {
-	jsonFile, err := os.Open(name) // #nosec G304
+	jsonFile, err := os.Open(name) // #nosec G703
 	if err != nil {
 		return nil, err
 	}
