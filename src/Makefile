@@ -14,6 +14,7 @@ run-local: $(TARGET)
 # After upgrading Go, external linting tools also need upgrading:
 #	go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest
 #	go install honnef.co/go/tools/cmd/staticcheck@latest
+#	go install github.com/kisielk/errcheck@latest
 #	go install golang.org/x/tools/cmd/deadcode@latest
 #	go install golang.org/x/vuln/cmd/govulncheck@latest
 #
