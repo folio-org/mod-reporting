@@ -65,7 +65,7 @@ func censorPassword(value string) (string, error) {
 		return "", nil
 	}
 	cid.Pass = "********"
-	bytes, err := json.Marshal(cid)
+	bytes, err := json.Marshal(cid) // #nosec G117
 	if err != nil {
 		return "", nil
 	}

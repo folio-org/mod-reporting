@@ -1,6 +1,6 @@
 module github.com/folio-org/mod-reporting
 
-go 1.25.4 // also update the version in Dockerfile when bumping major/minor version
+go 1.26.3 // also update the version in Dockerfile when bumping major/minor version
 
 require (
 	github.com/MikeTaylor/catlogger v0.0.3
