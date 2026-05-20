@@ -1,5 +1,9 @@
 # Change history for mod-reporting
 
+## [1.6.1](https://github.com/folio-org/mod-reporting/tree/v1.6.1) (IN PROGRESS)
+
+* Upgrade Go from v1.25.4 to v1.26.3 for vulnerablity patches. Fixes MODREP-54.
+
 ## [1.6.0](https://github.com/folio-org/mod-reporting/tree/v1.6.0) (2026-04-15)
 
 * Extend `/ldp/db/tables` SQL query so that the response includes tables in the `reshare_derived` schema. Fixes MODREP-49.
