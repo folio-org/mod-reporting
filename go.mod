@@ -1,14 +1,14 @@
 module github.com/folio-org/mod-reporting
 
-go 1.26.3 // also update the version in Dockerfile when bumping major/minor version
+go 1.26 // also update the version in Dockerfile when bumping major/minor version
 
 require (
 	github.com/MikeTaylor/catlogger v0.0.3
 	github.com/google/uuid v1.4.0
 	github.com/indexdata/foliogo v0.1.8
-	github.com/jackc/pgx/v5 v5.7.1
+	github.com/jackc/pgx/v5 v5.10.0
 	github.com/pashagolub/pgxmock/v3 v3.2.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.11.1
 )
 
 require (
@@ -21,9 +21,8 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/smarty/assertions v1.15.0 // indirect
-	golang.org/x/crypto v0.45.0 // indirect
-	golang.org/x/sync v0.18.0 // indirect
-	golang.org/x/text v0.31.0 // indirect
+	golang.org/x/sync v0.22.0 // indirect
+	golang.org/x/text v0.41.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	moul.io/http2curl v1.0.0 // indirect
 )
