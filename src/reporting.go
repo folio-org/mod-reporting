@@ -76,9 +76,6 @@ func fetchTables(dbConn PgxIface, isMetaDB bool) ([]dbTable, error) {
 	return pgx.CollectRows(rows, pgx.RowToStructByName[dbTable])
 }
 
-// Private to handleColumns
-var session2columns = make(map[string][]dbColumn)
-
 func handleColumns(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
 	v := req.URL.Query()
 	schema := v.Get("schema")
@@ -87,35 +84,12 @@ func handleColumns(w http.ResponseWriter, req *http.Request, session *ModReporti
 		return fmt.Errorf("must specify both schema and table")
 	}
 
-	columns, err := getColumnsByParams(session, schema, table, req.Header.Get("X-Okapi-Token"))
+	columns, err := session.getColumns(schema, table, req.Header.Get("X-Okapi-Token"))
 	if err != nil {
 		return err
 	}
 
 	return sendJSON(w, columns, "columns")
-}
-
-// Given a session, schema name and table name, returns the set of
-// columns, either from cache or from the database. In the later case,
-// the token is used, if needed, to find the information FOLIO has
-// about the reporting database.
-func getColumnsByParams(session *ModReportingSession, schema string, table string, token string) ([]dbColumn, error) {
-	key := session.key() + ":" + schema + ":" + table
-	columns := session2columns[key]
-	if columns == nil {
-		dbConn, err := session.findDbConn(token)
-		if err != nil {
-			return nil, fmt.Errorf("could not find reporting DB: %w", err)
-		}
-		columns, err = fetchColumns(dbConn, schema, table)
-		if err != nil {
-			return nil, fmt.Errorf("could not fetch columns from reporting DB: %w", err)
-		}
-
-		session2columns[key] = columns
-	}
-
-	return columns, nil
 }
 
 func fetchColumns(dbConn PgxIface, schema string, table string) ([]dbColumn, error) {
@@ -208,7 +182,7 @@ func makeSql(query jsonQuery, session *ModReportingSession, token string) (strin
 
 	sql := "SELECT " + makeColumns(qt.Columns) + ` FROM "` + qt.Schema + `"."` + qt.Table + `"`
 
-	columns, err := getColumnsByParams(session, qt.Schema, qt.Table, token)
+	columns, err := session.getColumns(qt.Schema, qt.Table, token)
 	if err != nil {
 		return "", nil, fmt.Errorf("could not obtain columns for %s.%s: %w", qt.Schema, qt.Table, err)
 	}

@@ -5,6 +5,7 @@
 * Tech debt: fix routing code to use a proper router and be less verbose. Fixes MODREP-57.
 * Fix race conditions in session creation and DB connection. Fixes MODREP-58.
 * Time sessions out to avoid accumulating infinite database connections. Fixes MODREP-59.
+* Move cache of column definitions into the session object and fix race condition. Fixes MODREP-62.
 
 ## [1.6.1](https://github.com/folio-org/mod-reporting/tree/v1.6.1) (2026-05-20)
 
