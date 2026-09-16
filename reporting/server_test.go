@@ -40,7 +40,7 @@ func runTests(t *testing.T, baseUrl string, session *ModReportingSession) {
 		{
 			name:     "home",
 			status:   200,
-			expected: "This is .*mod-reporting",
+			expected: `<a href="/htdocs/">Static area</a>`,
 		},
 		{
 			name:     "health check",
