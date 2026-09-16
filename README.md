@@ -100,6 +100,8 @@ The port specified in the `listen` stanza can be overridden at run-time by setti
 
 The timeout length specified by the `queryTimeout` entry in the configuration file can be overridden at run-time by setting the `MOD_REPORTING_QUERY_TIMEOUT` environment variable.
 
+mod-reporting caches a session for each combination of FOLIO URL, tenant and access token, and each session holds a connection to the reporting database. The `MOD_REPORTING_SESSION_TIMEOUT` environment variable specifies how long, in seconds, such a session is kept before it is discarded, so that the next request for it builds a new one and re-reads the reporting-database configuration. It defaults to 660 seconds (11 minutes), which is a little longer than the ten-minute lifespan of a FOLIO access token, so that a session is not discarded while the token that it is keyed on remains valid. Set it longer to re-use database connections for longer, or shorter to pick up changes to the reporting-database configuration sooner. A value that is not a positive whole number is ignored, and logged in the `error` category.
+
 ### Logging
 
 The following categories of logging information may be emitted, depending on how the logger is configured:

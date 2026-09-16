@@ -3,6 +3,7 @@ package main
 import "context"
 import "strings"
 import "sync"
+import "time"
 import "fmt"
 import "github.com/indexdata/foliogo"
 import "github.com/jackc/pgx/v5"
@@ -26,6 +27,7 @@ type ModReportingSession struct {
 	dbConnMutex  sync.Mutex
 	dbConn       PgxIface
 	isMDB        bool
+	created      time.Time // guarded by server.sessionMutex
 	// Overridden by tests that need a DB connection without a live Postgres
 	overrideMakeConn func(token string) (PgxIface, bool, error)
 }
@@ -87,6 +89,17 @@ func sessionKey(url string, tenant string, token string) string {
 
 func (session *ModReportingSession) key() string {
 	return sessionKey(session.url, session.tenant, session.token)
+}
+
+// Releases the resources held by an expired session. The connection pool runs
+// a background goroutine, so dropping the reference is not enough.
+func (session *ModReportingSession) close() {
+	session.dbConnMutex.Lock()
+	defer session.dbConnMutex.Unlock()
+	if session.dbConn != nil {
+		session.dbConn.Close()
+		session.dbConn = nil
+	}
 }
 
 func (session *ModReportingSession) makeDbConn(token string) (PgxIface, bool, error) {

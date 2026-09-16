@@ -26,8 +26,30 @@ type ModReportingServer struct {
 	logger       *catlogger.Logger
 	root         string
 	server       http.Server
+	sessionTTL   time.Duration
 	sessionMutex sync.Mutex
 	sessions     map[string]*ModReportingSession
+}
+
+// FOLIO rotates access tokens every 10 minutes by default, and each new token
+// yields a new session, so sessions must expire or they accumulate forever.
+// The default is a little longer than the token lifespan, so that a session is
+// never discarded while its token is still valid.
+const defaultSessionTTL = 11 * time.Minute
+
+func sessionTTL(logger *catlogger.Logger) time.Duration {
+	s := os.Getenv("MOD_REPORTING_SESSION_TIMEOUT")
+	if s == "" {
+		return defaultSessionTTL
+	}
+
+	seconds, err := strconv.Atoi(s)
+	if err != nil || seconds <= 0 {
+		logger.Log("error", fmt.Sprintf("ignoring bad MOD_REPORTING_SESSION_TIMEOUT '%s'", s))
+		return defaultSessionTTL
+	}
+
+	return time.Duration(seconds) * time.Second
 }
 
 func MakeModReportingServer(cfg *config, logger *catlogger.Logger, root string) *ModReportingServer {
@@ -42,7 +64,8 @@ func MakeModReportingServer(cfg *config, logger *catlogger.Logger, root string) 
 			WriteTimeout: time.Duration(cfg.QueryTimeout+60) * time.Second,
 			Handler:      mux,
 		},
-		sessions: map[string]*ModReportingSession{},
+		sessionTTL: sessionTTL(logger),
+		sessions:   map[string]*ModReportingSession{},
 	}
 
 	// Every request is logged, whichever route it lands on.
@@ -105,6 +128,7 @@ func (server *ModReportingServer) findSession(url string, tenant string, token s
 	key := sessionKey(url, tenant, token)
 
 	server.sessionMutex.Lock()
+	server.expireSessions()
 	session := server.sessions[key]
 	server.sessionMutex.Unlock()
 	if session != nil {
@@ -126,8 +150,23 @@ func (server *ModReportingServer) findSession(url string, tenant string, token s
 		return existing, nil
 	}
 
+	session.created = time.Now()
 	server.sessions[key] = session
 	return session, nil
+}
+
+// Discards sessions older than the TTL, so that a later request builds a new
+// one and re-reads the reporting-database configuration. Sessions are keyed on
+// an access token, which expires anyway.
+func (server *ModReportingServer) expireSessions() {
+	deadline := time.Now().Add(-server.sessionTTL)
+	for key, session := range server.sessions {
+		if session.created.Before(deadline) {
+			delete(server.sessions, key)
+			// Closing blocks until in-flight queries end: not under the lock
+			go session.close()
+		}
+	}
 }
 
 func handleRoot(w http.ResponseWriter, req *http.Request) {

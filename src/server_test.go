@@ -18,6 +18,8 @@ func Test_server(t *testing.T) {
 	assert.Nil(t, err)
 	session, err := NewModReportingSession(server, ts.URL, "t1", "dummyToken")
 	assert.Nil(t, err)
+	// created must be set, or the session expires before it is ever used
+	session.created = time.Now()
 	server.sessions[":"+ts.URL+":"] = session
 
 	go func() {
