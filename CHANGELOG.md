@@ -7,6 +7,7 @@
 * Time sessions out to avoid accumulating infinite database connections. Fixes MODREP-59.
 * Move cache of column definitions into the session object and fix race condition. Fixes MODREP-62.
 * Restructure source-code directory to adhere to Go conventions. Fixes MODREP-60.
+* Move home-page content out of code into HTML file. Fixes MODREP-61.
 
 ## [1.6.1](https://github.com/folio-org/mod-reporting/tree/v1.6.1) (2026-05-20)
 

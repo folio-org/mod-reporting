@@ -74,7 +74,11 @@ func MakeModReportingServer(cfg *config, logger *catlogger.Logger, root string) 
 		mux.ServeHTTP(w, req)
 	})
 
-	mux.HandleFunc("/{$}", handleRoot)
+	mux.HandleFunc("/{$}", func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = fmt.Fprintln(w, `<a href="/htdocs/">Static area</a>`)
+	})
+
 	fs := http.FileServer(http.Dir(root + "/htdocs"))
 	mux.Handle("/htdocs/", http.StripPrefix("/htdocs/", fs))
 	mux.Handle("/favicon.ico", fs)
@@ -167,24 +171,6 @@ func (server *ModReportingServer) expireSessions() {
 			go session.close()
 		}
 	}
-}
-
-func handleRoot(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprintln(w, `
-This is <a href="https://github.com/folio-org/mod-reporting">mod-reporting</a>. Try:
-<ul>
-  <li><a href="/admin/health">Health check</a></li>
-  <li><a href="/htdocs/">Static area</a></li>
-  <li><a href="/ldp/config">Legacy configuration WSAPI</a></li>
-  <li><a href="/ldp/config/dbinfo">Legacy configuration 'dbinfo'</a></li>
-  <li><a href="/ldp/db/tables">List tables from reporting database</a></li>
-  <li><a href="/ldp/db/columns?schema=folio_users&table=users">List columns for "users" table</a></li>
-  <li><a href="/ldp/db/log">Logs</a></li>
-  <li><a href="/ldp/db/version">Version</a></li>
-  <li><a href="/ldp/db/updates">Updates</a></li>
-  <li><a href="/ldp/db/processes">Processes</a></li>
-</ul>`)
 }
 
 // handler adapts a handlerFn into an http.HandlerFunc for route registration.
