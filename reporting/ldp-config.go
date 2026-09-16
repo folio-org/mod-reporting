@@ -1,5 +1,5 @@
 // handle the /ldp/config and /ldp/config/{key} endpoints
-package main
+package reporting
 
 import "io"
 import "fmt"

@@ -1,4 +1,4 @@
-package main
+package reporting
 
 import "testing"
 import "os"
@@ -23,7 +23,7 @@ func Test_server(t *testing.T) {
 	server.sessions[":"+ts.URL+":"] = session
 
 	go func() {
-		err = server.launch()
+		err = server.Launch()
 	}()
 
 	// Allow half a second for the server to start. This is ugly

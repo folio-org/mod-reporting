@@ -1,4 +1,4 @@
-package main
+package reporting
 
 import "os"
 import "errors"
@@ -104,7 +104,7 @@ func (server *ModReportingServer) Log(cat string, args ...string) {
 	server.logger.Log(cat, args...)
 }
 
-func (server *ModReportingServer) launch() error {
+func (server *ModReportingServer) Launch() error {
 	cfg := server.config
 
 	var port int

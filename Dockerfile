@@ -15,10 +15,12 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy sources
-COPY src etc htdocs ./
+COPY main.go ./
+COPY reporting ./reporting
+COPY etc htdocs ./
 
 # Build
-RUN CGO_ENABLED=0 go build -o mod-reporting ./...
+RUN CGO_ENABLED=0 go build -o mod-reporting .
 
 # https://github.com/GoogleContainerTools/distroless/tree/main/base
 FROM gcr.io/distroless/base:nonroot

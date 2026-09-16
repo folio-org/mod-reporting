@@ -1,14 +1,4 @@
-SRC=main.go configured-server.go config-file.go getdbinfo.go http-error.go server.go session.go ldp-config.go reporting.go ordered-map.go
-TARGET=../target/mod-reporting
-
-$(TARGET): $(SRC)
-	go build -o $@
-
-run: $(TARGET)
-	cd ..; env LOGCAT=listen,path,db,error,sql,op,curl,sql,status,response src/$(TARGET) etc/config.json
-
-run-local: $(TARGET)
-	cd ..; env LOGCAT=listen,path,db,error,sql,op,curl,status,response OKAPI_URL=https://folio-snapshot-okapi.dev.folio.org OKAPI_TENANT=diku OKAPI_USER=diku_admin src/$(TARGET) etc/config.json
+# The module's executable is built from the top level: see ../Makefile
 
 # After upgrading Go, external linting tools also need upgrading:
 #	go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest
@@ -31,7 +21,7 @@ lint:
 test:
 	go test -race -v -coverprofile=coverage.out ./...
 	go test -json -coverprofile=coverage.out ./... > coverage.json
-	@echo "go tool cover -func=coverage.out | sed 's/^github.com\/folio-org\/mod-reporting\/src\///'"
+	@echo "go tool cover -func=coverage.out | sed 's/^github.com\/folio-org\/mod-reporting\/reporting\///'"
 
 test1:
 	go test -v -coverprofile=coverage.out . -run Test_makeSql
@@ -43,5 +33,4 @@ fmt:
 	go fmt ./...
 
 clean:
-	rm -f $(TARGET) coverage.out coverage.json
-
+	rm -f coverage.out coverage.json
