@@ -20,9 +20,15 @@ run-local: $(TARGET)
 lint:
 	(cd reporting; make lint)
 
+# The central FOLIO CI workflow uploads the coverage reports from the
+# hardcoded path src/coverage.* (see folio-org/.github go-build.yml), so
+# copy them there until that workflow can be told where to look.
+#
 test:
 	(cd reporting; make test)
+	mkdir -p src && cp reporting/coverage.out reporting/coverage.json src/
 
 clean:
 	(cd target; make clean)
 	(cd reporting; make clean)
+	rm -rf src
