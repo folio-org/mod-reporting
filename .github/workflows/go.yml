@@ -18,8 +18,9 @@ on:
 
 jobs:
   go:
-    uses: folio-org/.github/.github/workflows/go.yml@v1
+    uses: MikeTaylor/.github/.github/workflows/go.yml@FOLIO-4572--configurable-test-coverage-location-go
     secrets: inherit
     with:
       docker-label-documentation: 'https://github.com/folio-org/ui-ldp/blob/master/doc/reports.md'
+      coverage-path: 'reporting/coverage.*'
 
