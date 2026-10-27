@@ -9,6 +9,7 @@
 * Restructure source-code directory to adhere to Go conventions. Fixes MODREP-60.
 * Move home-page content out of code into HTML file. Fixes MODREP-61.
 * Upgrade dependencies, including Go itself to v1.27. Fixes MODREP-56.
+* Add `DeployConfig.json`. Fixes MODREP-55.
 
 ## [1.6.1](https://github.com/folio-org/mod-reporting/tree/v1.6.1) (2026-05-20)
 
