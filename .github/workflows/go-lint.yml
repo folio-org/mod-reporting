@@ -17,5 +17,5 @@ jobs:
     uses: folio-org/.github/.github/workflows/go-lint.yml@v1
     with:
       errcheck-excludes-file: 'reporting/.errcheck-exclude'
-      golangci-config-file: 'reporting/.golangci.yml'
+      golangci-config-file: '.golangci.yml'
 
