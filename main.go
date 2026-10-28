@@ -2,6 +2,7 @@ package main
 
 import "os"
 import "fmt"
+import "github.com/folio-org/mod-reporting/reporting"
 
 func main() {
 	if len(os.Args) != 2 {
@@ -9,13 +10,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	server, err := MakeConfiguredServer(os.Args[1], ".")
+	server, err := reporting.MakeConfiguredServer(os.Args[1], ".")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: cannot create server: %s\n", os.Args[0], err)
 		os.Exit(2)
 	}
 
-	err = server.launch()
+	err = server.Launch()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: cannot launch server: %s\n", os.Args[0], err)
 		os.Exit(3)

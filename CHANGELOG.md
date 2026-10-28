@@ -1,5 +1,20 @@
 # Change history for mod-reporting
 
+## [IN PROGRESS]
+
+* Tech debt: fix routing code to use a proper router and be less verbose. Fixes MODREP-57.
+* Fix race conditions in session creation and DB connection. Fixes MODREP-58.
+* Time sessions out to avoid accumulating infinite database connections. Fixes MODREP-59.
+* Move cache of column definitions into the session object and fix race condition. Fixes MODREP-62.
+* Restructure source-code directory to adhere to Go conventions. Fixes MODREP-60.
+* Move home-page content out of code into HTML file. Fixes MODREP-61.
+* Upgrade dependencies, including Go itself to v1.27. Fixes MODREP-56.
+* Add `DeployConfig.json`. Fixes MODREP-55.
+
+## [1.6.1](https://github.com/folio-org/mod-reporting/tree/v1.6.1) (2026-05-20)
+
+* Upgrade Go from v1.25.4 to v1.26.3 for vulnerablity patches. Fixes MODREP-54.
+
 ## [1.6.0](https://github.com/folio-org/mod-reporting/tree/v1.6.0) (2026-04-15)
 
 * Extend `/ldp/db/tables` SQL query so that the response includes tables in the `reshare_derived` schema. Fixes MODREP-49.

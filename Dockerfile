@@ -2,7 +2,7 @@
 # Run with: docker run -p 12369:12369 -e OKAPI_PW=[DIKU_ADMIN-PASSWORD] mod-reporting
 
 # also update the version in go.mod
-FROM golang:1.26-alpine AS build
+FROM golang:1.27-alpine AS build
 
 # Install latest patch versions of alpine packages: https://pythonspeed.com/articles/security-updates-in-docker/
 RUN apk upgrade --no-cache
@@ -15,10 +15,12 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy sources
-COPY src etc htdocs ./
+COPY main.go ./
+COPY reporting ./reporting
+COPY etc htdocs ./
 
 # Build
-RUN CGO_ENABLED=0 go build -o mod-reporting ./...
+RUN CGO_ENABLED=0 go build -o mod-reporting .
 
 # https://github.com/GoogleContainerTools/distroless/tree/main/base
 FROM gcr.io/distroless/base:nonroot
