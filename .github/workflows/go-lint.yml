@@ -14,7 +14,7 @@ on:
 
 jobs:
   go-lint:
-    uses: folio-org/.github/.github/workflows/go-lint.yml@master
+    uses: folio-org/.github/.github/workflows/go-lint.yml@FOLIO-4582-staticcheck
     with:
       errcheck-excludes-file: 'reporting/.errcheck-exclude'
       golangci-config-file: '.golangci.yml'
