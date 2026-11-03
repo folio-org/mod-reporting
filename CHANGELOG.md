@@ -1,6 +1,6 @@
 # Change history for mod-reporting
 
-## [IN PROGRESS]
+## [1.6.2](https://github.com/folio-org/mod-reporting/tree/v1.6.2) (2026-11-03)
 
 * Tech debt: fix routing code to use a proper router and be less verbose. Fixes MODREP-57.
 * Fix race conditions in session creation and DB connection. Fixes MODREP-58.
