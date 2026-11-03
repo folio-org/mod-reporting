@@ -1,0 +1,142 @@
+{
+  "description": "mod-reporting deployment configuration template. Default values are calibrated against the reference bugfest environment (3 standalone tenants, 11 consortia tenants) as recorded in 'Trillium (R1 2026) - Modules configuration details' (module: 2 instances, 64 CPU units, memory 1024, memoryReservation 896; sidecar: the default sidecar values). See ADR-0013 (Module configuration management). mod-reporting is written in Go, not Java, so it has no JVM settings: the maxMetaspaceSize/Xmx values listed for it in the bugfest table (128m/768m) have no effect and are deliberately omitted. Null values must be supplied at deploy time or indicate that no override is recommended; see each description.",
+  "moduleDefaults": {
+    "resources": [
+      {
+        "name": "cpu",
+        "value": "64",
+        "description": "CPU request/limit for the mod-reporting container, matching the bugfest baseline for modules not listed individually"
+      },
+      {
+        "name": "memory",
+        "value": "1024",
+        "description": "Memory hard limit for the mod-reporting container in MiB, matching the bugfest baseline. The module is a small Go binary; most memory use comes from buffering large query results"
+      },
+      {
+        "name": "memoryReservation",
+        "value": "896",
+        "description": "Memory reservation (soft limit) for the mod-reporting container in MiB, matching the bugfest baseline"
+      }
+    ],
+    "java": [],
+    "deployment": {
+      "isHaSupported": true,
+      "replicasRecommendedCount": 2,
+      "description": "mod-reporting keeps no persistent state of its own: reporting-database settings live in mod-settings, and the only in-process state is a per-token cache of sessions and database connections that each replica builds independently. It therefore supports multiple replicas for HA. Two replicas match the bugfest baseline."
+    },
+    "kong": {
+      "timeouts": {
+        "connect": "60s",
+        "send": "60s",
+        "read": "310s"
+      },
+      "description": "The read timeout is raised above the 60s default because report and query requests (/ldp/db/query, /ldp/db/reports) may legitimately run for as long as MOD_REPORTING_QUERY_TIMEOUT (300 seconds by default) before Postgres cancels them. Keep the read timeout a little above that value if it is changed."
+    },
+    "EnvVars": [
+      {
+        "name": "SERVER_PORT",
+        "value": "12369",
+        "description": "TCP port on which the HTTP server listens, overriding the port in the bundled configuration file (which is 12369).",
+        "type": "CONFIG",
+        "essential": false
+      },
+      {
+        "name": "LOGCAT",
+        "value": "listen,path,op,status,db,error",
+        "description": "Comma-separated list of logging categories to emit (see README); the 'curl' category exposes live access tokens and must never be enabled in production.",
+        "type": "CONFIG",
+        "essential": false
+      },
+      {
+        "name": "LOGGING_CATEGORIES",
+        "value": null,
+        "description": "Alternative to LOGCAT that takes precedence over it when set; leave unset and use LOGCAT.",
+        "type": "CONFIG",
+        "essential": false
+      },
+      {
+        "name": "MOD_REPORTING_QUERY_TIMEOUT",
+        "value": "300",
+        "description": "Maximum time in seconds that Postgres may spend running any reporting query before it is cancelled, overriding the configuration file's queryTimeout (120); keep the Kong read timeout above this value.",
+        "type": "DB",
+        "essential": false
+      },
+      {
+        "name": "MOD_REPORTING_SESSION_TIMEOUT",
+        "value": "660",
+        "description": "Lifetime in seconds of each cached session (and its reporting-database connection), keyed by FOLIO URL, tenant and access token; the default is slightly longer than the ten-minute FOLIO access-token lifespan. Lower it to pick up changes to the reporting-database configuration sooner.",
+        "type": "CACHE",
+        "essential": false
+      },
+      {
+        "name": "REPORTING_DB_URL",
+        "value": null,
+        "description": "Full PostgreSQL URL of the reporting database (MetaDB or LDP Classic); overrides the per-tenant setting stored in mod-settings only when REPORTING_DB_USER and REPORTING_DB_PASS are also set. Normally left unset.",
+        "type": "DB",
+        "essential": false
+      },
+      {
+        "name": "REPORTING_DB_USER",
+        "value": null,
+        "description": "PostgreSQL user for the reporting-database override; used only together with REPORTING_DB_URL and REPORTING_DB_PASS.",
+        "type": "DB",
+        "essential": false
+      },
+      {
+        "name": "REPORTING_DB_PASS",
+        "value": null,
+        "description": "PostgreSQL password for the reporting-database override, supplied through secret management; used only together with REPORTING_DB_URL and REPORTING_DB_USER.",
+        "type": "DB",
+        "essential": false
+      },
+      {
+        "name": "OKAPI_URL",
+        "value": null,
+        "description": "Development only: FOLIO gateway URL used for requests that arrive without an X-Okapi-Url header, e.g. when the module is run standalone. Leave unset in production.",
+        "type": "CONFIG",
+        "essential": false
+      },
+      {
+        "name": "OKAPI_TENANT",
+        "value": null,
+        "description": "Development only: tenant to log in to at OKAPI_URL. Leave unset in production.",
+        "type": "CONFIG",
+        "essential": false
+      },
+      {
+        "name": "OKAPI_USER",
+        "value": null,
+        "description": "Development only: username for logging in at OKAPI_URL. Leave unset in production.",
+        "type": "CONFIG",
+        "essential": false
+      },
+      {
+        "name": "OKAPI_PW",
+        "value": null,
+        "description": "Development only: password for logging in at OKAPI_URL. Leave unset in production.",
+        "type": "CONFIG",
+        "essential": false
+      },
+      {
+        "name": "FOLIOGO_SESSION_TIMEOUT",
+        "value": null,
+        "description": "Development only: forces the refresh interval in seconds of the OKAPI_URL login session instead of deriving it from the token expiry. Leave unset.",
+        "type": "CONFIG",
+        "essential": false
+      }
+    ]
+  },
+  "sidecarDefaults": {
+    "resources": [],
+    "java": [],
+    "EnvVars": [
+      {
+        "name": "MODULE_URL",
+        "value": "http://localhost:12369",
+        "description": "Base URL of the co-located mod-reporting container. Must be set: the sidecar's own default uses port 8081, whereas mod-reporting listens on 12369 unless SERVER_PORT says otherwise.",
+        "type": "CONFIG",
+        "essential": false
+      }
+    ]
+  }
+}

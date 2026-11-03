@@ -1,5 +1,5 @@
 // handle the /ldp/config and /ldp/config/{key} endpoints
-package main
+package reporting
 
 import "io"
 import "fmt"
@@ -224,7 +224,7 @@ func writeConfigKey(w http.ResponseWriter, req *http.Request, session *ModReport
 		path = "settings/entries"
 	}
 
-	var simpleSettingsItem map[string]interface{} = map[string]interface{}{
+	simpleSettingsItem := map[string]interface{}{
 		"id":    id,
 		"scope": "ui-ldp.admin",
 		"key":   key,

@@ -1,7 +1,9 @@
-package main
+package reporting
 
 import "context"
 import "strings"
+import "sync"
+import "time"
 import "fmt"
 import "github.com/indexdata/foliogo"
 import "github.com/jackc/pgx/v5"
@@ -18,12 +20,19 @@ type PgxIface interface {
 
 type ModReportingSession struct {
 	server       *ModReportingServer // back-reference
-	url          string
-	tenant       string
-	token        string
 	folioSession foliogo.Session
+	dbConnMutex  sync.Mutex
 	dbConn       PgxIface
 	isMDB        bool
+	created      time.Time // guarded by server.sessionMutex
+	columnsMutex sync.Mutex
+	columns      map[string][]dbColumn // schema:table, guarded by columnsMutex
+	// Overridden by tests that need a DB connection without a live Postgres
+	overrideMakeConn func(token string) (PgxIface, bool, error)
+	// The last three members are not used, but are useful to see when debugging a session object
+	url    string
+	tenant string
+	token  string
 }
 
 /*
@@ -41,10 +50,11 @@ func NewModReportingSession(server *ModReportingServer, url string, tenant strin
 	}
 
 	session := ModReportingSession{
-		server: server,
-		url:    url,
-		tenant: tenant,
-		token:  token,
+		server:  server,
+		url:     url,
+		tenant:  tenant,
+		token:   token,
+		columns: map[string][]dbColumn{},
 	}
 
 	if url != "" {
@@ -81,8 +91,45 @@ func sessionKey(url string, tenant string, token string) string {
 	return tenant + ":" + url + ":" + token
 }
 
-func (session *ModReportingSession) key() string {
-	return sessionKey(session.url, session.tenant, session.token)
+// Given a schema name and table name, returns the set of columns, either from
+// cache or from the database. In the later case, the token is used, if needed,
+// to find the information FOLIO has about the reporting database.
+func (session *ModReportingSession) getColumns(schema string, table string, token string) ([]dbColumn, error) {
+	key := schema + ":" + table
+
+	session.columnsMutex.Lock()
+	columns := session.columns[key]
+	session.columnsMutex.Unlock()
+	if columns != nil {
+		return columns, nil
+	}
+
+	// The lock is not held across the fetch, which queries the reporting
+	// database: two requests may fetch the same columns, which is harmless.
+	dbConn, err := session.findDbConn(token)
+	if err != nil {
+		return nil, fmt.Errorf("could not find reporting DB: %w", err)
+	}
+	columns, err = fetchColumns(dbConn, schema, table)
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch columns from reporting DB: %w", err)
+	}
+
+	session.columnsMutex.Lock()
+	defer session.columnsMutex.Unlock()
+	session.columns[key] = columns
+	return columns, nil
+}
+
+// Releases the resources held by an expired session. The connection pool runs
+// a background goroutine, so dropping the reference is not enough.
+func (session *ModReportingSession) close() {
+	session.dbConnMutex.Lock()
+	defer session.dbConnMutex.Unlock()
+	if session.dbConn != nil {
+		session.dbConn.Close()
+		session.dbConn = nil
+	}
 }
 
 func (session *ModReportingSession) makeDbConn(token string) (PgxIface, bool, error) {
@@ -112,8 +159,17 @@ func (session *ModReportingSession) makeDbConn(token string) (PgxIface, bool, er
 }
 
 func (session *ModReportingSession) findDbConn(token string) (PgxIface, error) {
+	// Unlike the session cache, the lock is held across creation: a second
+	// connection pool would leak, as nothing ever closes the discarded one.
+	session.dbConnMutex.Lock()
+	defer session.dbConnMutex.Unlock()
+
 	if session.dbConn == nil {
-		dbConn, isMDB, err := session.makeDbConn(token)
+		makeConn := session.overrideMakeConn
+		if makeConn == nil {
+			makeConn = session.makeDbConn
+		}
+		dbConn, isMDB, err := makeConn(token)
 		if err != nil {
 			return nil, err
 		}

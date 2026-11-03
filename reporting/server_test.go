@@ -1,4 +1,4 @@
-package main
+package reporting
 
 import "testing"
 import "os"
@@ -18,10 +18,12 @@ func Test_server(t *testing.T) {
 	assert.Nil(t, err)
 	session, err := NewModReportingSession(server, ts.URL, "t1", "dummyToken")
 	assert.Nil(t, err)
+	// created must be set, or the session expires before it is ever used
+	session.created = time.Now()
 	server.sessions[":"+ts.URL+":"] = session
 
 	go func() {
-		err = server.launch()
+		err = server.Launch()
 	}()
 
 	// Allow half a second for the server to start. This is ugly
@@ -38,7 +40,7 @@ func runTests(t *testing.T, baseUrl string, session *ModReportingSession) {
 		{
 			name:     "home",
 			status:   200,
-			expected: "This is .*mod-reporting",
+			expected: `<a href="/htdocs/">Static area</a>`,
 		},
 		{
 			name:     "health check",
