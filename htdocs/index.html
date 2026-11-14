@@ -10,4 +10,44 @@ This is <a href="https://github.com/folio-org/mod-reporting">mod-reporting</a>. 
   <li><a href="/ldp/db/version">Version</a></li>
   <li><a href="/ldp/db/updates">Updates</a></li>
   <li><a href="/ldp/db/processes">Processes</a></li>
+  <li>
+    Run a report:
+    <button type="button" class="run-report"
+      data-url="https://raw.githubusercontent.com/seneyl/test_reports/main/circulation/visiting_researchers.sql">
+      Visiting researchers
+    </button>
+    <button type="button" class="run-report"
+      data-url="https://raw.githubusercontent.com/seneyl/test_reports/refs/heads/main/circulation2/additional_directory/circ_by_group.sql">
+      Circulation by group
+    </button>
+    <pre id="report-result"></pre>
+  </li>
 </ul>
+
+<script>
+  async function runReport(reportUrl) {
+    const result = document.getElementById('report-result');
+    result.textContent = `Running ${reportUrl} ...`;
+    try {
+      const res = await fetch('/ldp/db/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: reportUrl, params: {}, limit: 100 }),
+      });
+      const text = await res.text();
+      let body = text;
+      try {
+        body = JSON.stringify(JSON.parse(text), null, 2);
+      } catch (e) {
+        // Not JSON, e.g. an error message: show it as it is
+      }
+      result.textContent = `${reportUrl}\n${res.status} ${res.statusText}\n\n${body}`;
+    } catch (e) {
+      result.textContent = `${reportUrl}\nRequest failed: ${e}`;
+    }
+  }
+
+  document.querySelectorAll('button.run-report').forEach(button => {
+    button.addEventListener('click', () => runReport(button.dataset.url));
+  });
+</script>

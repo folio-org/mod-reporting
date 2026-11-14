@@ -1,5 +1,9 @@
 # Change history for mod-reporting
 
+## [1.7.0](https://github.com/folio-org/mod-reporting/tree/v1.7.0) (IN PROGRESS)
+
+* When running a report, determine which configured report repository (if any) it is from, and log this. First step towards MODREP-64.
+
 ## [1.6.2](https://github.com/folio-org/mod-reporting/tree/v1.6.2) (2026-11-03)
 
 * Tech debt: fix routing code to use a proper router and be less verbose. Fixes MODREP-57.

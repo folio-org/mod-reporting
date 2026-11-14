@@ -112,6 +112,7 @@ The following categories of logging information may be emitted, depending on how
 * `db` -- emits information about each reporting database and notes when successful connections are made
 * `sql` -- logs the generated SQL for each JSON query submitted via the `/ldp/db/query` endpoint
 * `validate` -- logs checks of report URLs against the specified whitelist regular expressions
+* `repo` -- logs which configured report repository, if any, each requested report is from
 * `error` -- emits error messages returned to the client in HTTP responses
 
 Access to the FOLIO database is performed using [the foliogo client library](https://github.com/indexdata/foliogo) which also uses categorical logger. See its documentation for information on the categories `service`, `session`, `op`, `auth`, `curl`, `status` and `response`.

@@ -89,6 +89,41 @@ func MakeMockHTTPServer() *httptest.Server {
 			  }
 			`))
 		} else if req.URL.Path == "/settings/entries" &&
+			req.URL.RawQuery == "query=scope==%22ui-ldp.admin%22+and+key==%22tqrepos%22" {
+			_, _ = w.Write([]byte(`
+			  {
+			    "items": [
+			      {
+				"id": "75c12fcb-ba6c-463f-a5fc-cb0587b7d43d",
+				"scope": "ui-ldp.admin",
+				"key": "tqrepos",
+				"value": [
+				  {
+				    "type": "github",
+				    "user": "seneyl",
+				    "repo": "test_reports",
+				    "branch": "main",
+				    "dir": "circulation2",
+				    "authorizedUsers": [ "11111111-1111-1111-1111-111111111111" ]
+				  },
+				  {
+				    "type": "gitlab",
+				    "baseUrl": "https://gitlab.example.com",
+				    "user": "mike",
+				    "repo": "reports",
+				    "branch": "dev",
+				    "dir": "/"
+				  }
+				]
+			      }
+			    ],
+			    "resultInfo": {
+			      "totalRecords": 1,
+			      "diagnostics": []
+			    }
+			  }
+			`))
+		} else if req.URL.Path == "/settings/entries" &&
 			req.URL.RawQuery == "query=scope==%22ui-ldp.admin%22+and+key==%22non-string%22" {
 			_, _ = w.Write([]byte(`
 			  {
