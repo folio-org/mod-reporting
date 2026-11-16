@@ -354,7 +354,11 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 	session.Log("repo", fmt.Sprintf("report %s is %s in repository %s (%d match(es)): user %q may run it",
 		query.Url, matches[0].Path, matches[0].Repo, len(matches), userId))
 
-	resp, err := http.Get(query.Url)
+	client := *http.DefaultClient
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+	resp, err := client.Get(query.Url)
 	if err != nil {
 		return fmt.Errorf("could not fetch report from %s: %w", query.Url, err)
 	}
