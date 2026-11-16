@@ -102,6 +102,16 @@ documentation:
               application/json:
                 type: !include template-results-schema.json
                 example: !include examples/template-results-example.json
+          403:
+            description: "The report is not in any configured report repository; or the user is not authorized to run reports from its repository; or the repository is restricted and there was no X-Okapi-User-Id header to identify the user"
+            body:
+              text/plain:
+                example: "cannot run report https://raw.githubusercontent.com/seneyl/test_reports/main/circulation/visiting_researchers.sql: user 01a0fe88-4ee9-4d8f-af08-352fbea6de36 is not authorized to run reports from repository github:seneyl/test_reports@main:circulation"
+          500:
+            description: "The report could not be run: for example, because the configured report repositories could not be loaded, the report could not be fetched, or it failed in the database"
+            body:
+              text/plain:
+                example: "cannot run report https://raw.githubusercontent.com/seneyl/test_reports/main/circulation/visiting_researchers.sql: could not load the configured report repositories from mod-settings: ..."
 
     /version:
       description: "The current Metadb version"

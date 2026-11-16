@@ -7,6 +7,8 @@ import "testing"
 import "encoding/json"
 import "github.com/stretchr/testify/assert"
 import "github.com/pashagolub/pgxmock/v3"
+import "errors"
+import "net/http"
 import "net/http/httptest"
 
 func Test_makeSql(t *testing.T) {
@@ -180,6 +182,12 @@ func Test_reportingHandlers(t *testing.T) {
 	defer ts.Close()
 	baseUrl := ts.URL
 
+	// URL of a report in the GitLab-style "test/reports" repository that
+	// the mock server's "tqrepos" setting places on the mock server itself
+	reportUrl := func(name string) string {
+		return baseUrl + "/api/v4/projects/test%2Freports/repository/files/reports%2F" + name + "/raw?ref=main"
+	}
+
 	tests := []testT{
 		{
 			name:          "bad DB connection for tables",
@@ -337,26 +345,26 @@ func Test_reportingHandlers(t *testing.T) {
 			path:     "/ldp/db/reports",
 			sendData: `{}`,
 			function: handleReport,
-			errorstr: "unsupported protocol scheme",
+			errorstr: "it is not in any configured report repository",
 		},
 		{
 			name:     "report with 404 URL",
 			path:     "/ldp/db/reports",
-			sendData: `{ "url": "` + baseUrl + `/x/y/z.sql" }`,
+			sendData: `{ "url": "` + reportUrl("missing.sql") + `" }`,
 			function: handleReport,
 			errorstr: "404 Not Found",
 		},
 		{
 			name:     "report without function declaration",
 			path:     "/ldp/db/reports",
-			sendData: `{ "url": "` + baseUrl + `/reports/noheader.sql" }`,
+			sendData: `{ "url": "` + reportUrl("noheader.sql") + `" }`,
 			function: handleReport,
 			errorstr: "could not extract SQL function name",
 		},
 		{
 			name:     "report that is not valid SQL",
 			path:     "/ldp/db/reports",
-			sendData: `{ "url": "` + baseUrl + `/reports/bad.sql" }`,
+			sendData: `{ "url": "` + reportUrl("bad.sql") + `" }`,
 			// pgxmock can't spot the badness of the SQL, so we manually cause an error
 			establishMock: func(data interface{}) error {
 				mock := data.(pgxmock.PgxPoolIface)
@@ -372,7 +380,7 @@ func Test_reportingHandlers(t *testing.T) {
 		{
 			name:     "simple report",
 			path:     "/ldp/db/reports",
-			sendData: `{ "url": "` + baseUrl + `/reports/loans.sql" }`,
+			sendData: `{ "url": "` + reportUrl("loans.sql") + `" }`,
 			establishMock: func(data interface{}) error {
 				mock := data.(pgxmock.PgxPoolIface)
 				mock.ExpectBegin()
@@ -393,7 +401,7 @@ func Test_reportingHandlers(t *testing.T) {
 		{
 			name: "report with parameters, limit and UUID",
 			path: "/ldp/db/reports",
-			sendData: `{ "url": "` + baseUrl + `/reports/loans.sql",
+			sendData: `{ "url": "` + reportUrl("loans.sql") + `",
 				     "params": { "end_date": "2023-03-18T00:00:00.000Z" },
 				     "limit": 100
 				   }`,
@@ -406,7 +414,7 @@ func Test_reportingHandlers(t *testing.T) {
 		{
 			name: "report with limit expressed as string",
 			path: "/ldp/db/reports",
-			sendData: `{ "url": "` + baseUrl + `/reports/loans.sql",
+			sendData: `{ "url": "` + reportUrl("loans.sql") + `",
 				     "params": { "end_date": "2023-03-18T00:00:00.000Z" },
 				     "limit": "101"
 				   }`,
@@ -428,7 +436,8 @@ func Test_reportingHandlers(t *testing.T) {
 			errorstr: "report URL did not match any whitelist regular expression",
 		},
 		{
-			name:         "match with whitelist",
+			// The whitelist is checked first, so getting this far shows it matched
+			name:         "match with whitelist, but not in any repository",
 			use2ndConfig: true,
 			path:         "/ldp/db/reports",
 			sendData:     `{ "url": "https://gitlab.com/MikeTaylor/metadb-queries/non/existent.sql" }`,
@@ -436,7 +445,7 @@ func Test_reportingHandlers(t *testing.T) {
 				return establishMockForReport(data.(pgxmock.PgxPoolIface))
 			},
 			function: handleReport,
-			errorstr: "could not fetch report",
+			errorstr: "it is not in any configured report repository",
 		},
 		{
 			name: "retrieve logs",
@@ -540,4 +549,89 @@ func Test_reportingHandlers(t *testing.T) {
 			}
 		})
 	}
+}
+
+// The rejections made when a report's repository cannot be established are
+// checked separately, as the status of the error matters too.
+func Test_reportRepoChecks(t *testing.T) {
+	ts := MakeMockHTTPServer()
+	defer ts.Close()
+
+	server, err := MakeConfiguredServer("../etc/silent.json", ".")
+	assert.Nil(t, err)
+
+	runReport := func(t *testing.T, tenant string, reportUrl string, userId string) error {
+		session, err := NewModReportingSession(server, ts.URL, tenant, "dummyToken")
+		assert.Nil(t, err)
+		mock, err := pgxmock.NewPool()
+		assert.Nil(t, err)
+		defer mock.Close()
+		session.dbConn = mock
+		session.isMDB = true
+
+		req := httptest.NewRequest("POST", ts.URL+"/ldp/db/reports", strings.NewReader(`{ "url": "`+reportUrl+`" }`))
+		if userId != "" {
+			req.Header.Set("X-Okapi-User-Id", userId)
+		}
+		w := httptest.NewRecorder()
+		err = handleReport(w, req, session)
+		// Rejection must happen before anything is sent to the database
+		assert.Nil(t, mock.ExpectationsWereMet())
+		return err
+	}
+
+	t.Run("report not in any repository", func(t *testing.T) {
+		url := ts.URL + "/reports/loans.sql"
+		err := runReport(t, "dummyTenant", url, "")
+		assert.EqualError(t, err, "cannot run report "+url+": it is not in any configured report repository")
+		var httpErr *HTTPError
+		assert.True(t, errors.As(err, &httpErr))
+		assert.Equal(t, http.StatusForbidden, httpErr.status)
+	})
+
+	t.Run("repositories cannot be loaded", func(t *testing.T) {
+		url := ts.URL + "/api/v4/projects/test%2Freports/repository/files/reports%2Floans.sql/raw?ref=main"
+		err := runReport(t, "noRepos", url, "")
+		assert.ErrorContains(t, err, "cannot run report "+url+": could not load the configured report repositories from mod-settings: ")
+		assert.ErrorContains(t, err, "mod-settings is unwell")
+		var httpErr *HTTPError
+		assert.False(t, errors.As(err, &httpErr), "should be reported as an internal server error")
+	})
+
+	// In the following tests, a report that is allowed to run fails at
+	// the next step, as noheader.sql has no function declaration: this
+	// shows that it got past the access check without needing the
+	// database.
+	restrictedUrl := ts.URL + "/api/v4/projects/test%2Frestricted/repository/files/reports%2Fnoheader.sql/raw?ref=main"
+	openUrl := ts.URL + "/api/v4/projects/test%2Freports/repository/files/reports%2Fnoheader.sql/raw?ref=main"
+	authorized := "22222222-2222-2222-2222-222222222222"
+	unauthorized := "33333333-3333-3333-3333-333333333333"
+
+	t.Run("open repository, no user", func(t *testing.T) {
+		err := runReport(t, "dummyTenant", openUrl, "")
+		assert.ErrorContains(t, err, "could not extract SQL function name")
+	})
+
+	t.Run("restricted repository, authorized user", func(t *testing.T) {
+		err := runReport(t, "dummyTenant", restrictedUrl, authorized)
+		assert.ErrorContains(t, err, "could not extract SQL function name")
+	})
+
+	t.Run("restricted repository, unauthorized user", func(t *testing.T) {
+		err := runReport(t, "dummyTenant", restrictedUrl, unauthorized)
+		assert.EqualError(t, err, "cannot run report "+restrictedUrl+": user "+unauthorized+
+			" is not authorized to run reports from repository gitlab:"+ts.URL+" test/restricted@main:reports")
+		var httpErr *HTTPError
+		assert.True(t, errors.As(err, &httpErr))
+		assert.Equal(t, http.StatusForbidden, httpErr.status)
+	})
+
+	t.Run("restricted repository, no user", func(t *testing.T) {
+		err := runReport(t, "dummyTenant", restrictedUrl, "")
+		assert.EqualError(t, err, "cannot run report "+restrictedUrl+": request has no X-Okapi-User-Id header, "+
+			"so cannot check whether the user is authorized to run reports from repository gitlab:"+ts.URL+" test/restricted@main:reports")
+		var httpErr *HTTPError
+		assert.True(t, errors.As(err, &httpErr))
+		assert.Equal(t, http.StatusForbidden, httpErr.status)
+	})
 }

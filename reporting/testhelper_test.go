@@ -3,6 +3,7 @@ package reporting
 import "errors"
 import "time"
 import "fmt"
+import "strings"
 import "net/http"
 import "net/http/httptest"
 import "github.com/pashagolub/pgxmock/v3"
@@ -46,7 +47,24 @@ type testT struct {
 
 // Dummy HTTP server used by multiple tests
 func MakeMockHTTPServer() *httptest.Server {
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	// The server's own URL, which the "tqrepos" setting below refers to.
+	// It is taken from the listener before the server starts, so that it
+	// is set before any request can read it, and is not derived from the
+	// request.
+	var serverUrl string
+	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		// Raw-file requests for the GitLab-style "test/..." repositories
+		// configured in "tqrepos" below are served from the same files as
+		// plain /reports/... requests. (The %2Fs in such URLs have already
+		// been decoded in req.URL.Path.)
+		if rest, ok := strings.CutPrefix(req.URL.Path, "/api/v4/projects/test/"); ok {
+			if _, p, ok := strings.Cut(rest, "/repository/files/"); ok {
+				if p, ok = strings.CutSuffix(p, "/raw"); ok {
+					req.URL.Path = "/" + p
+				}
+			}
+		}
+
 		if req.URL.Path == "/settings/entries" &&
 			req.URL.RawQuery == "query=scope==%22ui-ldp.admin%22" {
 			_, _ = w.Write([]byte(`
@@ -88,6 +106,67 @@ func MakeMockHTTPServer() *httptest.Server {
 			    }
 			  }
 			`))
+		} else if req.URL.Path == "/settings/entries" &&
+			req.URL.RawQuery == "query=scope==%22ui-ldp.admin%22+and+key==%22tqrepos%22" &&
+			req.Header.Get("X-Okapi-Tenant") == "noRepos" {
+			// Used to test what happens when the repositories cannot be loaded
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintln(w, "mod-settings is unwell")
+		} else if req.URL.Path == "/settings/entries" &&
+			req.URL.RawQuery == "query=scope==%22ui-ldp.admin%22+and+key==%22tqrepos%22" {
+			// The last two repositories are on this mock server, so that
+			// reports can be fetched from them. Of these, "test/reports" is
+			// open to all and "test/restricted" is not.
+			_, _ = w.Write([]byte(strings.ReplaceAll(`
+			  {
+			    "items": [
+			      {
+				"id": "75c12fcb-ba6c-463f-a5fc-cb0587b7d43d",
+				"scope": "ui-ldp.admin",
+				"key": "tqrepos",
+				"value": [
+				  {
+				    "type": "github",
+				    "user": "seneyl",
+				    "repo": "test_reports",
+				    "branch": "main",
+				    "dir": "circulation2",
+				    "authorizedUsers": [ "11111111-1111-1111-1111-111111111111" ]
+				  },
+				  {
+				    "type": "gitlab",
+				    "baseUrl": "https://gitlab.example.com",
+				    "user": "mike",
+				    "repo": "reports",
+				    "branch": "dev",
+				    "dir": "/"
+				  },
+				  {
+				    "type": "gitlab",
+				    "baseUrl": "MOCK-SERVER",
+				    "user": "test",
+				    "repo": "reports",
+				    "branch": "main",
+				    "dir": "reports"
+				  },
+				  {
+				    "type": "gitlab",
+				    "baseUrl": "MOCK-SERVER",
+				    "user": "test",
+				    "repo": "restricted",
+				    "branch": "main",
+				    "dir": "reports",
+				    "authorizedUsers": [ "22222222-2222-2222-2222-222222222222" ]
+				  }
+				]
+			      }
+			    ],
+			    "resultInfo": {
+			      "totalRecords": 1,
+			      "diagnostics": []
+			    }
+			  }
+			`, "MOCK-SERVER", serverUrl)))
 		} else if req.URL.Path == "/settings/entries" &&
 			req.URL.RawQuery == "query=scope==%22ui-ldp.admin%22+and+key==%22non-string%22" {
 			_, _ = w.Write([]byte(`
@@ -156,6 +235,9 @@ PARALLEL SAFE;
 			fmt.Fprintln(w, "Not found")
 		}
 	}))
+	serverUrl = "http://" + ts.Listener.Addr().String()
+	ts.Start()
+	return ts
 }
 
 // Functions to establish pgxmock expectations, used by multiple tests

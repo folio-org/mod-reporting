@@ -337,7 +337,28 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 		return fmt.Errorf("query may not be loaded from %s: %w", query.Url, err)
 	}
 
-	resp, err := http.Get(query.Url)
+	// Only reports from the configured report repositories may be run,
+	// and only by users whom those repositories permit (MODREP-64).
+	matches, err := session.findReportRepos(query.Url, req.Header.Get("X-Okapi-Token"))
+	if err != nil {
+		return fmt.Errorf("cannot run report %s: could not load the configured report repositories from mod-settings: %w", query.Url, err)
+	}
+	if len(matches) == 0 {
+		return &HTTPError{http.StatusForbidden, fmt.Sprintf("cannot run report %s: it is not in any configured report repository", query.Url)}
+	}
+	userId := req.Header.Get("X-Okapi-User-Id")
+	err = checkAccess(matches, userId)
+	if err != nil {
+		return &HTTPError{http.StatusForbidden, fmt.Sprintf("cannot run report %s: %v", query.Url, err)}
+	}
+	session.Log("repo", fmt.Sprintf("report %s is %s in repository %s (%d match(es)): user %q may run it",
+		query.Url, matches[0].Path, matches[0].Repo, len(matches), userId))
+
+	client := *http.DefaultClient
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+	resp, err := client.Get(query.Url)
 	if err != nil {
 		return fmt.Errorf("could not fetch report from %s: %w", query.Url, err)
 	}
