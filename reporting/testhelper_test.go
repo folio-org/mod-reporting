@@ -47,7 +47,12 @@ type testT struct {
 
 // Dummy HTTP server used by multiple tests
 func MakeMockHTTPServer() *httptest.Server {
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	// The server's own URL, which the "tqrepos" setting below refers to.
+	// It is taken from the listener before the server starts, so that it
+	// is set before any request can read it, and is not derived from the
+	// request.
+	var serverUrl string
+	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		// Raw-file requests for the GitLab-style "test/..." repositories
 		// configured in "tqrepos" below are served from the same files as
 		// plain /reports/... requests. (The %2Fs in such URLs have already
@@ -161,7 +166,7 @@ func MakeMockHTTPServer() *httptest.Server {
 			      "diagnostics": []
 			    }
 			  }
-			`, "MOCK-SERVER", "http://"+req.Host)))
+			`, "MOCK-SERVER", serverUrl)))
 		} else if req.URL.Path == "/settings/entries" &&
 			req.URL.RawQuery == "query=scope==%22ui-ldp.admin%22+and+key==%22non-string%22" {
 			_, _ = w.Write([]byte(`
@@ -230,6 +235,9 @@ PARALLEL SAFE;
 			fmt.Fprintln(w, "Not found")
 		}
 	}))
+	serverUrl = "http://" + ts.Listener.Addr().String()
+	ts.Start()
+	return ts
 }
 
 // Functions to establish pgxmock expectations, used by multiple tests
