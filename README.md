@@ -112,7 +112,7 @@ The following categories of logging information may be emitted, depending on how
 * `db` -- emits information about each reporting database and notes when successful connections are made
 * `sql` -- logs the generated SQL for each JSON query submitted via the `/ldp/db/query` endpoint
 * `validate` -- logs checks of report URLs against the specified whitelist regular expressions
-* `repo` -- logs which configured report repository, if any, each requested report is from
+* `repo` -- logs which configured report repository each report that is run is from
 * `error` -- emits error messages returned to the client in HTTP responses
 
 Access to the FOLIO database is performed using [the foliogo client library](https://github.com/indexdata/foliogo) which also uses categorical logger. See its documentation for information on the categories `service`, `session`, `op`, `auth`, `curl`, `status` and `response`.
@@ -123,11 +123,24 @@ Access to the FOLIO database is performed using [the foliogo client library](htt
 
 In normal operation, each incoming request is serviced by reference to the Okapi instance that sent it. For development, however, it's possible to override this behaviour and have every outgoing request go to a nominated Okapi instance. This is specified by the environment variables `OKAPI_URL` (e.g https://folio-snapshot-okapi.dev.folio.org) and `OKAPI_TENANT` (e.g. `diku`). When using an Okapi service specified in this way, authentication onto this instance is done using the values specifid by the environment variables `OKAPI_USER` and `OKAPI_PW`.
 
-Similarly, in normal operation, mod-reporting determines which underlying reporting database to connect to on the basis of the information configured in FOLIO -- specifically, in the mod-settings record with scope `ui-ldp.config` and key `dbinfo`, as managed by the "Database configuration" settings page of the Reporting app. However, these configured settings can be overridden if mod-reporting is run with all three of the following environment variables set:
+Similarly, in normal operation, mod-reporting determines which underlying reporting database to connect to on the basis of the information configured in FOLIO -- specifically, in the mod-settings record with scope `ui-ldp.admin` and key `dbinfo`, as managed by the "Database configuration" settings page of the Reporting app. However, these configured settings can be overridden if mod-reporting is run with all three of the following environment variables set:
 
 * `REPORTING_DB_URL` -- The full URL of the PostgreSQL database to connect to, e.g. `postgres://localhost:5432/metadb`
 * `REPORTING_DB_USER` -- The name of the PostgreSQL user to act as when accessing this database
 * `REPORTING_DB_PASS` -- The password to use for nominated user
+
+### Report repositories
+
+mod-reporting runs only reports that are in one of the report repositories configured in FOLIO -- specifically, in the mod-settings record with scope `ui-ldp.admin` and key `tqrepos`, as managed by the "Report repositories" settings page of the Reporting app. A request to run any other report is rejected with HTTP status 403, and a request made when the configured repositories cannot be loaded from mod-settings is rejected with status 500. In both cases, the response explains why. This check is made in addition to the whitelist described [above](#configuration-file), which is applied first.
+
+Each report repository may also list the users who are authorized to run its reports, as UUIDs in its `authorizedUsers` field. A repository with no authorized users is open to all users. If a report is in more than one configured repository -- for example, because one repository's directory is within another's -- then a user may run it if any of those repositories permits it. The user is identified by the `X-Okapi-User-Id` header, which Okapi and the Eureka sidecar provide. A request from a user who is not authorized is rejected with status 403. So is a request with no `X-Okapi-User-Id` header for a report from a restricted repository, since there is no user to check: this does not normally happen, but may when mod-reporting is accessed directly rather than via Okapi or Eureka. In every case, the response explains why the request was rejected.
+
+A report URL is recognised as being in a repository if it is of the form that the Reporting app itself uses to fetch report files:
+
+* GitHub: `https://raw.githubusercontent.com/USER/REPO/REF/PATH`
+* GitLab: `BASE/api/v4/projects/USER%2FREPO/repository/files/PATH/raw?ref=BRANCH`
+
+The `PATH` must be within the repository's configured directory. For GitHub, `REF` may be the configured branch, either as a plain name or as `refs/heads/BRANCH`, or the SHA of any commit. **Note.** Since mod-reporting does not ask GitHub which branch a commit is on, a SHA is accepted for any configured branch of the repository: being able to run reports from one branch of a repository therefore allows running them, by SHA, from any commit on any branch of it.
 
 
 

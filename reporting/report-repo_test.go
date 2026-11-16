@@ -15,13 +15,16 @@ func Test_getReportRepos(t *testing.T) {
 
 	repos, err := getReportRepos(session.folioSession, "")
 	assert.Nil(t, err)
-	assert.Equal(t, 2, len(repos))
+	assert.Equal(t, 4, len(repos))
 	assert.Equal(t, "seneyl", repos[0].User)
 	assert.Equal(t, "circulation2", repos[0].Dir)
 	assert.Equal(t, []string{"11111111-1111-1111-1111-111111111111"}, repos[0].AuthorizedUsers)
 	assert.Equal(t, "gitlab", repos[1].Type)
 	assert.Equal(t, "https://gitlab.example.com", repos[1].BaseUrl)
 	assert.Nil(t, repos[1].AuthorizedUsers)
+	assert.Equal(t, ts.URL, repos[2].BaseUrl)
+	assert.Nil(t, repos[2].AuthorizedUsers)
+	assert.Equal(t, []string{"22222222-2222-2222-2222-222222222222"}, repos[3].AuthorizedUsers)
 
 	matches, err := session.findReportRepos("https://raw.githubusercontent.com/seneyl/test_reports/main/circulation2/circ.sql", "")
 	assert.Nil(t, err)
@@ -196,6 +199,63 @@ func Test_findReportRepos(t *testing.T) {
 			}
 			assert.Equal(t, test.paths, paths)
 			assert.Equal(t, test.dirs, dirs)
+		})
+	}
+}
+
+func Test_checkAccess(t *testing.T) {
+	alice := "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+	bob := "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
+	open := reportRepoMatch{Repo: reportRepo{User: "u", Repo: "r", Branch: "main", Dir: "open"}}
+	forAlice := reportRepoMatch{Repo: reportRepo{User: "u", Repo: "r", Branch: "main", Dir: "a", AuthorizedUsers: []string{alice}}}
+	forBob := reportRepoMatch{Repo: reportRepo{User: "u", Repo: "r", Branch: "main", Dir: "b", AuthorizedUsers: []string{bob}}}
+
+	tests := []struct {
+		name    string
+		matches []reportRepoMatch
+		userId  string
+		allowed bool
+		message string // expected error message, if not allowed
+	}{
+		{name: "open repository, user", matches: []reportRepoMatch{open}, userId: alice, allowed: true},
+		{name: "open repository, no user", matches: []reportRepoMatch{open}, allowed: true},
+		{name: "restricted repository, authorized user", matches: []reportRepoMatch{forAlice}, userId: alice, allowed: true},
+		{
+			name:    "restricted repository, unauthorized user",
+			matches: []reportRepoMatch{forAlice},
+			userId:  bob,
+			message: "user " + bob + " is not authorized to run reports from repository github:u/r@main:a",
+		},
+		{
+			name:    "restricted repository, no user",
+			matches: []reportRepoMatch{forAlice},
+			message: "request has no X-Okapi-User-Id header, so cannot check whether the user is authorized to run reports from repository github:u/r@main:a",
+		},
+		{name: "restricted and open repositories, no user", matches: []reportRepoMatch{forAlice, open}, allowed: true},
+		{name: "two restricted repositories, authorized for second", matches: []reportRepoMatch{forAlice, forBob}, userId: bob, allowed: true},
+		{
+			name:    "two restricted repositories, authorized for neither",
+			matches: []reportRepoMatch{forAlice, forBob},
+			userId:  "cccccccc-cccc-cccc-cccc-cccccccccccc",
+			message: "user cccccccc-cccc-cccc-cccc-cccccccccccc is not authorized to run reports from repository github:u/r@main:a or github:u/r@main:b",
+		},
+		{
+			name:    "two restricted repositories, no user",
+			matches: []reportRepoMatch{forAlice, forBob},
+			message: "request has no X-Okapi-User-Id header, so cannot check whether the user is authorized to run reports from repository github:u/r@main:a or github:u/r@main:b",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := checkAccess(test.matches, test.userId)
+			// The status of a refusal is decided by handleReport, and
+			// checked by Test_reportRepoChecks
+			if test.allowed {
+				assert.Nil(t, err)
+			} else {
+				assert.EqualError(t, err, test.message)
+			}
 		})
 	}
 }

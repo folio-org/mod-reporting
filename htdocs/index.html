@@ -20,20 +20,109 @@ This is <a href="https://github.com/folio-org/mod-reporting">mod-reporting</a>. 
       data-url="https://raw.githubusercontent.com/seneyl/test_reports/refs/heads/main/circulation2/additional_directory/circ_by_group.sql">
       Circulation by group
     </button>
+    <br />
+    Restricted repository:
+    <button type="button" class="run-report"
+      data-url="https://gitlab.msu.edu/api/v4/projects/f0112643%2Fmetadb-reports/repository/files/folio%2Freports%2Fcount_loans.sql/raw?ref=main"
+      data-user-id="01a0fe88-4ee9-4d8f-af08-352fbea6de36">
+      Authorized user
+    </button>
+    <button type="button" class="run-report"
+      data-url="https://gitlab.msu.edu/api/v4/projects/f0112643%2Fmetadb-reports/repository/files/folio%2Freports%2Fcount_loans.sql/raw?ref=main"
+      data-user-id="4f1c2d6e-8b3a-4e57-9c0d-7a2b5e9f1c38">
+      Unauthorized user
+    </button>
+    <br />
+    Rejected before the report is fetched:
+    <button type="button" class="run-report" data-method="GET">
+      Wrong HTTP method
+    </button>
+    <button type="button" class="run-report" data-body="this is not JSON">
+      Body is not JSON
+    </button>
+    <button type="button" class="run-report" data-body='{ "url": 42 }'>
+      URL is not a string
+    </button>
+    <br />
+    Rejected as not in an authorized repository:
+    <button type="button" class="run-report"
+      data-url="https://github.com/seneyl/test_reports/blob/main/circulation/visiting_researchers.sql">
+      Web page, not raw file
+    </button>
+    <button type="button" class="run-report"
+      data-url="https://raw.githubusercontent.com/seneyl/test_reports/main/budgets/budget_query.sql">
+      Directory not configured
+    </button>
+    <button type="button" class="run-report"
+      data-url="https://raw.githubusercontent.com/seneyl/test_reports/main/circulation/../budgets/budget_query.sql">
+      Escape from directory
+    </button>
+    <button type="button" class="run-report"
+      data-url="https://raw.githubusercontent.com/seneyl/test_reports/no-such-branch/circulation/visiting_researchers.sql">
+      Branch not configured
+    </button>
+    <br />
+    Fetched, but cannot be run:
+    <button type="button" class="run-report"
+      data-url="https://raw.githubusercontent.com/seneyl/test_reports/main/circulation/no_such_report.sql">
+      No such report
+    </button>
+    <button type="button" class="run-report"
+      data-url="https://raw.githubusercontent.com/seneyl/test_reports/main/circulation/visiting_researchers.json">
+      Not an SQL report
+    </button>
+    <br />
+    Fails in the database:
+    <button type="button" class="run-report"
+      data-url="https://raw.githubusercontent.com/seneyl/test_reports/main/circulation/visiting_researchers.sql"
+      data-params='{ "no_such_parameter": "x" }'>
+      Unknown parameter
+    </button>
+    <button type="button" class="run-report"
+      data-url="https://raw.githubusercontent.com/seneyl/test_reports/main/circulation/visiting_researchers.sql"
+      data-params='{ "start_date": "not a date" }'>
+      Bad parameter value
+    </button>
+    <button type="button" class="run-report"
+      data-url="https://raw.githubusercontent.com/seneyl/test_reports/main/circulation/visiting_researchers.sql"
+      data-limit="-1">
+      Negative limit
+    </button>
     <pre id="report-result"></pre>
   </li>
 </ul>
 
 <script>
-  async function runReport(reportUrl) {
+  // Each button describes its request in data- attributes, all optional:
+  //   data-method  HTTP method (default POST)
+  //   data-body    exact request body to send, overriding the next three
+  //   data-url     URL of the report
+  //   data-params  JSON object of report parameters (default none)
+  //   data-limit   maximum number of rows (default 100)
+  //   data-user-id user ID to send in the X-Okapi-User-Id header (default none)
+  function makeRequest(spec) {
+    const method = spec.method || 'POST';
+    const headers = {};
+    if (spec.userId) headers['X-Okapi-User-Id'] = spec.userId;
+    if (method === 'GET') return { method, headers };
+
+    headers['Content-Type'] = 'application/json';
+    const body = spec.body !== undefined ? spec.body : JSON.stringify({
+      url: spec.url,
+      params: spec.params ? JSON.parse(spec.params) : {},
+      limit: spec.limit !== undefined ? Number(spec.limit) : 100,
+    });
+    return { method, headers, body };
+  }
+
+  async function runReport(label, spec) {
     const result = document.getElementById('report-result');
-    result.textContent = `Running ${reportUrl} ...`;
+    const request = makeRequest(spec);
+    const userHeader = request.headers['X-Okapi-User-Id'] ? `X-Okapi-User-Id: ${request.headers['X-Okapi-User-Id']}\n` : '';
+    const sent = `${label}\n${request.method} /ldp/db/reports\n${userHeader}${request.body || ''}`;
+    result.textContent = `${sent}\n\nRunning...`;
     try {
-      const res = await fetch('/ldp/db/reports', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: reportUrl, params: {}, limit: 100 }),
-      });
+      const res = await fetch('/ldp/db/reports', request);
       const text = await res.text();
       let body = text;
       try {
@@ -41,13 +130,13 @@ This is <a href="https://github.com/folio-org/mod-reporting">mod-reporting</a>. 
       } catch (e) {
         // Not JSON, e.g. an error message: show it as it is
       }
-      result.textContent = `${reportUrl}\n${res.status} ${res.statusText}\n\n${body}`;
+      result.textContent = `${sent}\n\n${res.status} ${res.statusText}\n${body}`;
     } catch (e) {
-      result.textContent = `${reportUrl}\nRequest failed: ${e}`;
+      result.textContent = `${sent}\n\nRequest failed: ${e}`;
     }
   }
 
   document.querySelectorAll('button.run-report').forEach(button => {
-    button.addEventListener('click', () => runReport(button.dataset.url));
+    button.addEventListener('click', () => runReport(button.textContent.trim(), button.dataset));
   });
 </script>

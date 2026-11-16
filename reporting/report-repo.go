@@ -3,6 +3,7 @@ package reporting
 import "fmt"
 import "path"
 import "regexp"
+import "slices"
 import "sort"
 import "strings"
 import "net/url"
@@ -173,7 +174,10 @@ func (rr reportRepo) matchGitHubUrl(bareUrl string) (matches bool, encodedPath s
 	}
 
 	// We cannot tell whether a commit is on the configured branch
-	// without asking GitHub, so for now any commit is accepted.
+	// without asking GitHub, so for now any commit SHA is accepted, and
+	// matches every configured branch of the repository. This means
+	// that being able to run reports from one branch of a repository
+	// allows running them, by SHA, from any commit on any branch of it.
 	ref, after, found := strings.Cut(rest, "/")
 	if !found || !commitShaRegexp.MatchString(ref) {
 		return false, ""
@@ -252,4 +256,40 @@ func (session *ModReportingSession) findReportRepos(reportUrl string, token stri
 		return nil, err
 	}
 	return findReportRepos(repos, reportUrl), nil
+}
+
+// Determines whether the user with the specified ID may run a report that is
+// in all of the specified repositories, of which there must be at least one.
+// The user may run it if any of the repositories permits it: that is, if any
+// has no authorized users, and is therefore open to all, or lists the user
+// among its authorized users. The user ID is needed only if all of the
+// repositories are restricted.
+//
+// Returns nil if the report may be run. Otherwise, returns an error whose
+// message says why not: either the user is not authorized, or there is no
+// user ID to check.
+func checkAccess(matches []reportRepoMatch, userId string) error {
+	for _, m := range matches {
+		if len(m.Repo.AuthorizedUsers) == 0 {
+			return nil
+		}
+	}
+
+	names := make([]string, len(matches))
+	for i, m := range matches {
+		names[i] = m.Repo.String()
+	}
+	repoList := strings.Join(names, " or ")
+
+	if userId == "" {
+		return fmt.Errorf("request has no X-Okapi-User-Id header, so cannot check whether the user is authorized to run reports from repository %s", repoList)
+	}
+
+	for _, m := range matches {
+		if slices.Contains(m.Repo.AuthorizedUsers, userId) {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("user %s is not authorized to run reports from repository %s", userId, repoList)
 }

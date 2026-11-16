@@ -115,7 +115,8 @@ func runTests(t *testing.T, baseUrl string, session *ModReportingSession) {
 		{
 			name: "report with parameters",
 			path: "ldp/db/reports",
-			sendData: `{ "url": "` + baseUrl + `/reports/loans.sql",
+			// A report in the GitLab-style repository on the mock server: see MakeMockHTTPServer
+			sendData: `{ "url": "` + baseUrl + `/api/v4/projects/test%2Freports/repository/files/reports%2Floans.sql/raw?ref=main",
 				     "params": { "end_date": "2023-03-18T00:00:00.000Z" },
 				     "limit": 100
 				   }`,
