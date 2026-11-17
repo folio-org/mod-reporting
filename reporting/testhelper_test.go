@@ -201,6 +201,9 @@ func MakeMockHTTPServer() *httptest.Server {
 			`))
 		} else if req.URL.Path == "/settings/entries/75c12fcb-ba6c-463f-a5fc-cb0587b7d43c" {
 			// Nothing to do
+		} else if req.URL.Path == "/reports/redirect.sql" {
+			// A relative redirect, as mod-reporting should report the absolute URL
+			http.Redirect(w, req, "/reports/loans.sql", http.StatusTemporaryRedirect)
 		} else if req.URL.Path == "/reports/noheader.sql" {
 			_, _ = w.Write([]byte(`this is a bad report`))
 		} else if req.URL.Path == "/reports/bad.sql" {
