@@ -312,6 +312,11 @@ type reportResponse struct {
 	Records      []OrderedMap `json:"records"`
 }
 
+// How long to wait for a report's SQL to be fetched from its repository. Without
+// a limit, a repository host that stops responding would tie up the request
+// indefinitely. A variable rather than a constant so that tests can shorten it.
+var reportFetchTimeout = 30 * time.Second
+
 func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
 	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
 	if err != nil {
@@ -355,6 +360,7 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 		query.Url, matches[0].Path, matches[0].Repo, len(matches), userId))
 
 	client := *http.DefaultClient
+	client.Timeout = reportFetchTimeout
 	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
 	}
