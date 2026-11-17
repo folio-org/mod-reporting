@@ -41,7 +41,7 @@ For the purposes of this form, "store" includes the following:
 <!--- - [ ] Other personal data - Please list as needed -->
 <!--- - [ ] Other personal data - Please list as needed -->
 
-User IDs (UUIDs of records in mod-users) are logged for permitted report-repository access when the `repo` logging category is enabled and for denied access when the `error` category is enabled. The deployment defaults enable `error`. To avoid logging these UUIDs, exclude both categories from the effective logging configuration: `LOGGING_CATEGORIES`, or `LOGCAT` when `LOGGING_CATEGORIES` is unset. Disabling `error` also suppresses other error logs.
+User IDs (UUIDs of records in mod-users) are logged for permitted report-repository access when the `repo` logging category is enabled and for denied access when the `error` category is enabled. The deployment defaults enable `error`. To avoid logging these UUIDs, exclude both categories from the effective logging configuration: `LOGGING_CATEGORIES`; or `LOGCAT` when `LOGGING_CATEGORIES` is unset; or the configuration file's `logging.categories` setting when both are unset. Disabling `error` also suppresses other error logs.
 
 
 **NOTE** This is not intended to be a comprehensive list, but instead provide a starting point for module developers/maintainers to use.
