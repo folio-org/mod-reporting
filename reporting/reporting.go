@@ -363,6 +363,15 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 		return fmt.Errorf("could not fetch report from %s: %w", query.Url, err)
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode >= 300 && resp.StatusCode < 400 {
+		target := "an unspecified location"
+		location, locationErr := resp.Location()
+		if locationErr == nil {
+			target = location.String()
+		}
+		return fmt.Errorf("could not fetch report from %s: it redirects (%s) to %s, and redirects are not followed: "+
+			"the report repository may need to be configured with the URL it redirects to", query.Url, resp.Status, target)
+	}
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("could not fetch report from %s: %s", query.Url, resp.Status)
 	}

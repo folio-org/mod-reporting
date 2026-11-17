@@ -142,6 +142,8 @@ A report URL is recognised as being in a repository if it is of the form that th
 
 The `PATH` must be within the repository's configured directory. For GitHub, `REF` may be the configured branch, either as a plain name or as `refs/heads/BRANCH`, or the SHA of any commit. **Note.** Since mod-reporting does not ask GitHub which branch a commit is on, a SHA is accepted for any configured branch of the repository: being able to run reports from one branch of a repository therefore allows running them, by SHA, from any commit on any branch of it.
 
+mod-reporting does not follow redirects when fetching a report. The repository check is made against the requested URL, so following a redirect would mean running a report fetched from a URL that was never checked. If a report URL redirects, the request fails with status 500 and a message giving the URL that it redirects to. This usually means that the repository is configured with an outdated or alias address -- for example, a GitLab server whose base URL redirects to another hostname -- and it should be reconfigured with the address that it redirects to.
+
 
 
 ## Notes
