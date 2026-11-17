@@ -355,6 +355,15 @@ func Test_reportingHandlers(t *testing.T) {
 			errorstr: "404 Not Found",
 		},
 		{
+			name:     "report URL that redirects",
+			path:     "/ldp/db/reports",
+			sendData: `{ "url": "` + reportUrl("redirect.sql") + `" }`,
+			function: handleReport,
+			errorstr: "could not fetch report from " + reportUrl("redirect.sql") + ": it redirects (307 Temporary Redirect) to " +
+				baseUrl + "/reports/loans.sql, and redirects are not followed: " +
+				"the report repository may need to be configured with the URL it redirects to",
+		},
+		{
 			name:     "report without function declaration",
 			path:     "/ldp/db/reports",
 			sendData: `{ "url": "` + reportUrl("noheader.sql") + `" }`,
