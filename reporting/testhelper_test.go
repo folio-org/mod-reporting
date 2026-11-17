@@ -204,6 +204,10 @@ func MakeMockHTTPServer() *httptest.Server {
 		} else if req.URL.Path == "/reports/redirect.sql" {
 			// A relative redirect, as mod-reporting should report the absolute URL
 			http.Redirect(w, req, "/reports/loans.sql", http.StatusTemporaryRedirect)
+		} else if req.URL.Path == "/reports/slow.sql" {
+			// Outlasts the shortened reportFetchTimeout that tests use
+			time.Sleep(500 * time.Millisecond)
+			_, _ = w.Write([]byte(`--metadb:function slow`))
 		} else if req.URL.Path == "/reports/noheader.sql" {
 			_, _ = w.Write([]byte(`this is a bad report`))
 		} else if req.URL.Path == "/reports/bad.sql" {

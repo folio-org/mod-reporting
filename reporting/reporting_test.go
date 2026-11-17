@@ -3,6 +3,7 @@ package reporting
 import "io"
 import "strings"
 import "fmt"
+import "time"
 import "testing"
 import "encoding/json"
 import "github.com/stretchr/testify/assert"
@@ -181,6 +182,11 @@ func Test_reportingHandlers(t *testing.T) {
 	ts := MakeMockHTTPServer()
 	defer ts.Close()
 	baseUrl := ts.URL
+
+	// Short enough that the "slow.sql" report times out without slowing the tests much
+	savedTimeout := reportFetchTimeout
+	reportFetchTimeout = 100 * time.Millisecond
+	t.Cleanup(func() { reportFetchTimeout = savedTimeout })
 
 	// URL of a report in the GitLab-style "test/reports" repository that
 	// the mock server's "tqrepos" setting places on the mock server itself
@@ -362,6 +368,13 @@ func Test_reportingHandlers(t *testing.T) {
 			errorstr: "could not fetch report from " + reportUrl("redirect.sql") + ": it redirects (307 Temporary Redirect) to " +
 				baseUrl + "/reports/loans.sql, and redirects are not followed: " +
 				"the report repository may need to be configured with the URL it redirects to",
+		},
+		{
+			name:     "report URL that is too slow to respond",
+			path:     "/ldp/db/reports",
+			sendData: `{ "url": "` + reportUrl("slow.sql") + `" }`,
+			function: handleReport,
+			errorstr: "/could not fetch report from .*Client.Timeout exceeded/",
 		},
 		{
 			name:     "report without function declaration",
