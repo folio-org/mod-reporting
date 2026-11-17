@@ -4,6 +4,7 @@
 
 * Run only reports from the configured report repositories, rejecting others with HTTP status 403, and rejecting all reports when the list of repositories cannot be loaded from mod-settings. Reports will only run for users authorized by the report's repository; requests by other users are rejected with HTTP status 403 Unauthorised. A repository with no authorized users is open to all. Fixes MODREP-64.
   * **Note.** These changes can stop an existing system from running reports: for example, one with no report repositories configured. But since the only legitimate way of running reports from the UI is driven by the list of what reports are in the configured repositories, this is not an IRL scenario. That is why this change is included in a minor release rather than a major (breaking) release.
+* Reject requests to run reports that are redirected (HTTP 3xx) as this would be a way to route around the user-authorization checks. Fixes MODREP-67.
 
 ## [1.6.2](https://github.com/folio-org/mod-reporting/tree/v1.6.2) (2026-11-03)
 
