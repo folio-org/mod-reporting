@@ -201,6 +201,37 @@ func MakeMockHTTPServer() *httptest.Server {
 			`))
 		} else if req.URL.Path == "/settings/entries/75c12fcb-ba6c-463f-a5fc-cb0587b7d43c" {
 			// Nothing to do
+		} else if after, ok := strings.CutPrefix(req.URL.Path, "/repos/seneyl/test_reports/compare/"); ok {
+			// The GitHub compare API, as used by commitIsOnBranch. The
+			// result depends on the first character of the commit SHA.
+			base, head, _ := strings.Cut(after, "...")
+			status := ""
+			switch head[0] {
+			case 'a':
+				status = "behind"
+			case 'b':
+				status = "identical"
+			case 'c':
+				status = "ahead"
+			case 'd':
+				status = "diverged"
+			case 'e':
+				w.WriteHeader(http.StatusNotFound)
+				fmt.Fprintln(w, `{"message":"Not Found"}`)
+				return
+			case 'f':
+				w.WriteHeader(http.StatusForbidden)
+				fmt.Fprintln(w, `{"message":"API rate limit exceeded"}`)
+				return
+			case '9':
+				_, _ = w.Write([]byte("not JSON"))
+				return
+			}
+			// Commits are on "feature/x" only if they are identical to its head
+			if base == "feature/x" && status != "identical" {
+				status = "diverged"
+			}
+			fmt.Fprintf(w, `{"status":%q}`, status)
 		} else if req.URL.Path == "/reports/redirect.sql" {
 			// A relative redirect, as mod-reporting should report the absolute URL
 			http.Redirect(w, req, "/reports/loans.sql", http.StatusTemporaryRedirect)

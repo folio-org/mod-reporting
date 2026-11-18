@@ -317,6 +317,20 @@ type reportResponse struct {
 // indefinitely. A variable rather than a constant so that tests can shorten it.
 var reportFetchTimeout = 30 * time.Second
 
+// Makes an HTTP client for fetching reports, and for asking their repositories
+// about them. It times out after reportFetchTimeout, and does not follow
+// redirects, since the repository checks are made against the URL that was
+// requested: a redirected request should fail rather than being answered from
+// somewhere that was never checked.
+func makeFetchClient() http.Client {
+	client := *http.DefaultClient
+	client.Timeout = reportFetchTimeout
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+	return client
+}
+
 func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportingSession) error {
 	dbConn, err := session.findDbConn(req.Header.Get("X-Okapi-Token"))
 	if err != nil {
@@ -351,6 +365,19 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 	if len(matches) == 0 {
 		return &HTTPError{http.StatusForbidden, fmt.Sprintf("cannot run report %s: it is not in any configured report repository", query.Url)}
 	}
+	// A URL that names a commit by SHA matches any repository with the
+	// right user and name, whatever its branch, so we must check that
+	// the commit really is on the branch. The commit is saved for the
+	// error message, since verifyCommits may drop every match. All the
+	// matches that name a commit name the same one.
+	commit := matches[0].Commit
+	matches, err = session.verifyCommits(matches)
+	if err != nil {
+		return fmt.Errorf("cannot run report %s: %w", query.Url, err)
+	}
+	if len(matches) == 0 {
+		return &HTTPError{http.StatusForbidden, fmt.Sprintf("cannot run report %s: commit %s is not on the branch of any configured report repository that contains the report", query.Url, commit)}
+	}
 	userId := req.Header.Get("X-Okapi-User-Id")
 	err = checkAccess(matches, userId)
 	if err != nil {
@@ -359,11 +386,7 @@ func handleReport(w http.ResponseWriter, req *http.Request, session *ModReportin
 	session.Log("repo", fmt.Sprintf("report %s is %s in repository %s (%d match(es)): user %q may run it",
 		query.Url, matches[0].Path, matches[0].Repo, len(matches), userId))
 
-	client := *http.DefaultClient
-	client.Timeout = reportFetchTimeout
-	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		return http.ErrUseLastResponse
-	}
+	client := makeFetchClient()
 	resp, err := client.Get(query.Url)
 	if err != nil {
 		return fmt.Errorf("could not fetch report from %s: %w", query.Url, err)

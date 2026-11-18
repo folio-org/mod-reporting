@@ -648,6 +648,35 @@ func Test_reportRepoChecks(t *testing.T) {
 		assert.Equal(t, http.StatusForbidden, httpErr.status)
 	})
 
+	t.Run("commit not on branch", func(t *testing.T) {
+		savedApiUrl := githubApiUrl
+		githubApiUrl = ts.URL
+		t.Cleanup(func() { githubApiUrl = savedApiUrl })
+		// The mock server says that commits starting with "c" are not on the branch
+		sha := strings.Repeat("c", 40)
+		url := "https://raw.githubusercontent.com/seneyl/test_reports/" + sha + "/circulation2/circ.sql"
+		err := runReport(t, "dummyTenant", url, "11111111-1111-1111-1111-111111111111")
+		assert.EqualError(t, err, "cannot run report "+url+": commit "+sha+
+			" is not on the branch of any configured report repository that contains the report")
+		var httpErr *HTTPError
+		assert.True(t, errors.As(err, &httpErr))
+		assert.Equal(t, http.StatusForbidden, httpErr.status)
+	})
+
+	t.Run("cannot check whether commit is on branch", func(t *testing.T) {
+		savedApiUrl := githubApiUrl
+		githubApiUrl = ts.URL
+		t.Cleanup(func() { githubApiUrl = savedApiUrl })
+		// The mock server refuses requests about commits starting with "f"
+		sha := strings.Repeat("f", 40)
+		url := "https://raw.githubusercontent.com/seneyl/test_reports/" + sha + "/circulation2/circ.sql"
+		err := runReport(t, "dummyTenant", url, "11111111-1111-1111-1111-111111111111")
+		assert.EqualError(t, err, "cannot run report "+url+": could not ask GitHub whether commit "+sha+
+			" is on branch main of seneyl/test_reports: 403 Forbidden")
+		var httpErr *HTTPError
+		assert.False(t, errors.As(err, &httpErr), "should be reported as an internal server error")
+	})
+
 	t.Run("restricted repository, no user", func(t *testing.T) {
 		err := runReport(t, "dummyTenant", restrictedUrl, "")
 		assert.EqualError(t, err, "cannot run report "+restrictedUrl+": request has no X-Okapi-User-Id header, "+

@@ -1,5 +1,6 @@
 package reporting
 
+import "strings"
 import "testing"
 import "github.com/stretchr/testify/assert"
 
@@ -45,10 +46,11 @@ func Test_findReportRepos(t *testing.T) {
 	}
 
 	tests := []struct {
-		name  string
-		url   string
-		paths []string // expected path of each match, in order
-		dirs  []string // expected directory of each matching repo, in order
+		name   string
+		url    string
+		paths  []string // expected path of each match, in order
+		dirs   []string // expected directory of each matching repo, in order
+		commit string   // expected commit of every match
 	}{
 		{
 			name:  "github, simple",
@@ -69,10 +71,15 @@ func Test_findReportRepos(t *testing.T) {
 			dirs:  []string{"circulation2"},
 		},
 		{
-			name:  "github, commit SHA matches all branches",
-			url:   "https://raw.githubusercontent.com/seneyl/test_reports/" + sha + "/circulation2/circ.sql",
-			paths: []string{"circulation2/circ.sql", "circulation2/circ.sql"},
-			dirs:  []string{"circulation2", ""},
+			name:   "github, commit SHA matches all branches, pending verification",
+			url:    "https://raw.githubusercontent.com/seneyl/test_reports/" + sha + "/circulation2/circ.sql",
+			paths:  []string{"circulation2/circ.sql", "circulation2/circ.sql"},
+			dirs:   []string{"circulation2", ""},
+			commit: sha,
+		},
+		{
+			name: "github, SHA that is too short",
+			url:  "https://raw.githubusercontent.com/seneyl/test_reports/" + sha[:39] + "/circulation2/circ.sql",
 		},
 		{
 			name:  "github, branch containing slash",
@@ -192,6 +199,7 @@ func Test_findReportRepos(t *testing.T) {
 			for _, m := range matches {
 				paths = append(paths, m.Path)
 				dirs = append(dirs, m.Repo.Dir)
+				assert.Equal(t, test.commit, m.Commit)
 			}
 			if test.paths == nil {
 				test.paths = []string{}
@@ -199,6 +207,77 @@ func Test_findReportRepos(t *testing.T) {
 			}
 			assert.Equal(t, test.paths, paths)
 			assert.Equal(t, test.dirs, dirs)
+		})
+	}
+}
+
+func Test_verifyCommits(t *testing.T) {
+	ts := MakeMockHTTPServer()
+	defer ts.Close()
+	savedApiUrl := githubApiUrl
+	githubApiUrl = ts.URL
+	t.Cleanup(func() { githubApiUrl = savedApiUrl })
+
+	server, err := MakeConfiguredServer("../etc/silent.json", ".")
+	assert.Nil(t, err)
+	session, err := NewModReportingSession(server, ts.URL, "dummyTenant", "dummyToken")
+	assert.Nil(t, err)
+
+	main := reportRepo{User: "seneyl", Repo: "test_reports", Branch: "main", Dir: "circulation2"}
+	mainWhole := reportRepo{User: "Seneyl", Repo: "test_reports", Branch: "main"}
+	feature := reportRepo{User: "seneyl", Repo: "test_reports", Branch: "feature/x"}
+	byBranch := reportRepoMatch{Repo: main, Path: "circulation2/circ.sql"}
+
+	// The mock server's answer depends on the first character of the SHA
+	sha := func(c string) string { return strings.Repeat(c, 40) }
+	bySha := func(repo reportRepo, commit string) reportRepoMatch {
+		return reportRepoMatch{Repo: repo, Path: "circulation2/circ.sql", Commit: commit}
+	}
+
+	tests := []struct {
+		name     string
+		matches  []reportRepoMatch
+		expected []reportRepoMatch
+		errorstr string
+	}{
+		{name: "no matches", matches: []reportRepoMatch{}, expected: []reportRepoMatch{}},
+		{name: "match by branch is not checked", matches: []reportRepoMatch{byBranch}, expected: []reportRepoMatch{byBranch}},
+		{name: "ancestor of branch", matches: []reportRepoMatch{bySha(main, sha("a"))}, expected: []reportRepoMatch{bySha(main, sha("a"))}},
+		{name: "head of branch", matches: []reportRepoMatch{bySha(main, sha("b"))}, expected: []reportRepoMatch{bySha(main, sha("b"))}},
+		{name: "ahead of branch", matches: []reportRepoMatch{bySha(main, sha("c"))}, expected: []reportRepoMatch{}},
+		{name: "diverged from branch", matches: []reportRepoMatch{bySha(main, sha("d"))}, expected: []reportRepoMatch{}},
+		{name: "unknown commit", matches: []reportRepoMatch{bySha(main, sha("e"))}, expected: []reportRepoMatch{}},
+		{
+			name:     "on one branch but not another",
+			matches:  []reportRepoMatch{bySha(main, sha("a")), bySha(mainWhole, sha("a")), bySha(feature, sha("a"))},
+			expected: []reportRepoMatch{bySha(main, sha("a")), bySha(mainWhole, sha("a"))},
+		},
+		{
+			name:     "branch containing slash",
+			matches:  []reportRepoMatch{bySha(feature, sha("b"))},
+			expected: []reportRepoMatch{bySha(feature, sha("b"))},
+		},
+		{
+			name:     "GitHub refuses",
+			matches:  []reportRepoMatch{bySha(main, sha("f"))},
+			errorstr: "could not ask GitHub whether commit " + sha("f") + " is on branch main of seneyl/test_reports: 403 Forbidden",
+		},
+		{
+			name:     "GitHub sends bad JSON",
+			matches:  []reportRepoMatch{bySha(main, sha("9"))},
+			errorstr: "could not decode GitHub's comparison of commit " + sha("9") + " with branch main of seneyl/test_reports: ",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			verified, err := session.verifyCommits(test.matches)
+			if test.errorstr != "" {
+				assert.ErrorContains(t, err, test.errorstr)
+				return
+			}
+			assert.Nil(t, err)
+			assert.Equal(t, test.expected, verified)
 		})
 	}
 }
