@@ -2,7 +2,6 @@ package reporting
 
 import "os"
 import "errors"
-import "strings"
 import "fmt"
 import "encoding/json"
 import "github.com/indexdata/foliogo"
@@ -13,8 +12,10 @@ type settingsValue struct {
 	User string `json:"user"`
 }
 
+// The value may be either a JSON object or a string containing an
+// encoded JSON object (see issue #60), so we decode it in two stages.
 type settingsItem struct {
-	Value settingsValue `json:"value"`
+	Value json.RawMessage `json:"value"`
 }
 
 type settingsResultInfo struct {
@@ -23,16 +24,6 @@ type settingsResultInfo struct {
 
 type settingsResponse struct {
 	Items      []settingsItem     `json:"items"`
-	ResultInfo settingsResultInfo `json:"resultInfo"`
-}
-
-// If the value is encoded as a string: see issue #60
-type oldSettingsItem struct {
-	Value string `json:"value"`
-}
-
-type oldSettingsResponse struct {
-	Items      []oldSettingsItem  `json:"items"`
 	ResultInfo settingsResultInfo `json:"resultInfo"`
 }
 
@@ -51,43 +42,39 @@ func getDbInfo(session foliogo.Session, token string) (string, string, string, e
 		return "", "", "", fmt.Errorf("cannot fetch 'dbinfo' from config: %w", err)
 	}
 
-	var r settingsResponse
-	err = json.Unmarshal(bytes, &r)
+	value, err := parseDbInfo(bytes)
 	if err != nil {
-		if !strings.Contains(err.Error(), "Go struct field settingsItem.items.value") {
-			return "", "", "", fmt.Errorf("decode 'dbinfo' JSON failed: %w", err)
-		}
-
-		var oldR oldSettingsResponse
-		err = json.Unmarshal(bytes, &oldR)
-		if err != nil {
-			return "", "", "", fmt.Errorf("decode 'dbinfo' old-style JSON failed: %w", err)
-		}
-
-		err = convertResultInfo(oldR, &r)
-		if err != nil {
-			return "", "", "", err
-		}
+		return "", "", "", err
 	}
-
-	if r.ResultInfo.TotalRecords < 1 {
-		return "", "", "", errors.New("no 'dbinfo' setting in FOLIO database")
-	}
-	value := r.Items[0].Value
 	return value.Url, value.User, value.Pass, nil
 }
 
-func convertResultInfo(oldR oldSettingsResponse, r *settingsResponse) error {
-	r.ResultInfo = oldR.ResultInfo
+func parseDbInfo(bytes []byte) (settingsValue, error) {
+	var value settingsValue
 
-	count := len(oldR.Items)
-	r.Items = make([]settingsItem, count)
-	for i := 0; i < count; i++ {
-		err := json.Unmarshal([]byte(oldR.Items[i].Value), &r.Items[i].Value)
-		if err != nil {
-			return fmt.Errorf("decode 'dbinfo' old-style value failed: %w", err)
-		}
+	var r settingsResponse
+	err := json.Unmarshal(bytes, &r)
+	if err != nil {
+		return value, fmt.Errorf("decode 'dbinfo' JSON failed: %w", err)
 	}
 
-	return nil
+	if r.ResultInfo.TotalRecords < 1 || len(r.Items) < 1 {
+		return value, errors.New("no 'dbinfo' setting in FOLIO database")
+	}
+
+	raw := r.Items[0].Value
+	if len(raw) > 0 && raw[0] == '"' {
+		var encoded string
+		err = json.Unmarshal(raw, &encoded)
+		if err != nil {
+			return value, fmt.Errorf("decode 'dbinfo' string value failed: %w", err)
+		}
+		raw = []byte(encoded)
+	}
+
+	err = json.Unmarshal(raw, &value)
+	if err != nil {
+		return value, fmt.Errorf("decode 'dbinfo' value failed: %w", err)
+	}
+	return value, nil
 }
