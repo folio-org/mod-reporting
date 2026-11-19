@@ -38,3 +38,35 @@ func Test_getDbInfo(t *testing.T) {
 		assert.Equal(t, "pw", dbpass)
 	})
 }
+
+func Test_parseDbInfo(t *testing.T) {
+	t.Run("value as object", func(t *testing.T) {
+		data := `{"items":[{"key":"dbinfo","value":{"url":"u1","user":"fiona","pass":"pw"}}],"resultInfo":{"totalRecords":1}}`
+		value, err := parseDbInfo([]byte(data))
+		assert.Nil(t, err)
+		assert.Equal(t, "u1", value.Url)
+		assert.Equal(t, "fiona", value.User)
+		assert.Equal(t, "pw", value.Pass)
+	})
+
+	t.Run("value as encoded string", func(t *testing.T) {
+		data := `{"items":[{"key":"dbinfo","value":"{\"url\":\"u2\",\"user\":\"community\",\"pass\":\"secret\"}"}],"resultInfo":{"totalRecords":1}}`
+		value, err := parseDbInfo([]byte(data))
+		assert.Nil(t, err)
+		assert.Equal(t, "u2", value.Url)
+		assert.Equal(t, "community", value.User)
+		assert.Equal(t, "secret", value.Pass)
+	})
+
+	t.Run("no records", func(t *testing.T) {
+		data := `{"items":[],"resultInfo":{"totalRecords":0}}`
+		_, err := parseDbInfo([]byte(data))
+		assert.ErrorContains(t, err, "no 'dbinfo' setting")
+	})
+
+	t.Run("string value that is not JSON", func(t *testing.T) {
+		data := `{"items":[{"key":"dbinfo","value":"not json"}],"resultInfo":{"totalRecords":1}}`
+		_, err := parseDbInfo([]byte(data))
+		assert.ErrorContains(t, err, "decode 'dbinfo' value failed")
+	})
+}

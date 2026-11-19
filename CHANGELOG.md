@@ -7,6 +7,7 @@
 * Reject requests to run reports that are redirected (HTTP 3xx) as this would be a way to route around the user-authorization checks. Fixes MODREP-67.
 * Fetching a report's SQL now times out after 30 seconds rather than waiting indefinitely for an unresponsive repository host. Fixes MODREP-65.
 * A GitHub report URL that names a commit by its SHA, rather than naming the branch, is accepted only if that commit is on the configured branch of the repository, as determined by asking the GitHub API. Previously, any commit on any branch was accepted. Fixes MODREP-66.
+* When reading dbinfo, use more robust approach to accepting value as string as well as data. Fixes MODREP-68.
 
 ## [1.6.2](https://github.com/folio-org/mod-reporting/tree/v1.6.2) (2026-11-03)
 
